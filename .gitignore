@@ -1,0 +1,16 @@
+# Cache and Testing
+__pycache__/
+*.py[cod]
+*.pytest
+
+# Folders
+output/
+docs/
+# Cache and Testing
+__pycache__/
+*.py[cod]
+*.pytest
+
+# Folders
+output/
+docs/
