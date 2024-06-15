@@ -353,6 +353,118 @@ The final segmentation of the coin image is shown in Figure \ref{fig:q1c_selecte
 
 \subsubsection{Discussion}
 The chosen method works almost perfectly, the only issue is that the median filtering and edge dilation steps can result in the final mask being slightly unfaithful to the actual coin shapes around the edge. However, with more experimentation the current approach could be improved to better capture the coin shapes.
+
+\section{Question 2 - Inverse Problems and Multi-resolution analysis}
+\subsection{Part A - Inverse Problems}
+% Introduce the problem in 2a: y = Ax + b, as a common inverse problem. Line fitting based on some noisy measurements of the line is an example of such a problem.
+\subsubsection{Motivation}
+In many scientific and engineering contexts, problems can be modelled as a linear system of equations, expressed as 
+\[
+y = Ax + b,
+\]
+where:
+\begin{itemize}
+    \item \(y\) is the vector of measurements,
+    \item \(x\) represents the unknown vector of the underlying signal or model parameters.
+    \item \(A\) is the system matrix that defines how measurements \(y\) relate to the signal / parameter vector \(x\).
+    \item \(b\) is the (typically unknown) vector representing noise or measurement errors.
+\end{itemize}
+
+The challenge lies in recovering the unknown vector \(x\) from the measurements \(y\). However, such systems are rarely well-posed; it is not possible to invert the matrix \(A\) and obtain a unique solution. It is more typically for these systems to fall into the categories of being either over-determined, with more measurements than unknowns, or under-determined, with more unknowns than measurements.
+
+In such cases, finding a solution involves minimising an objective function that quantifies the error between the observed measurements and those predicted by the model. This process is complemented by incorporating regularisation terms, which are required to find a unique solution in the under determined regime. 
+
+\subsubsection{Problem Set Up}
+In this scenario, the goal is to fit a line described by the equation \( y = ax + c \) to a dataset consisting of noisy measurements. This is a typical example of a linear inverse problem where we aim to determine the parameters of a line, which in matrix terms can be framed as:
+\[
+y = Ax + b.
+\]
+Here:
+\begin{itemize}
+    \item \(y\) is the vector of observed \(y\)-coordinates from the dataset, representing the outputs or dependent variables.
+    \item \(A\) is the system matrix that incorporates the independent variable data. For each measurement pair \((x_i, y_i)\), the matrix \(A\) contains a row \([x_i, 1]\) to account for the slope and the intercept of the line.
+    \item \(x\) is the vector of parameters to be estimated, specifically \([a, c]\), where \(a\) is the slope and \(c\) is the intercept of the line.
+    \item \(b\) represents the vector of measurement errors.
+\end{itemize}
+This linear regression problem is tackled for two datasets describing noisy line measurements. Both datasets are depicted in Figure \ref{fig:line_fitting_data}, illustrating the points used for line fitting. It is worth noting that the second dataset is identical to the first for all points except for one which is modified to describe an outlier point. 
+
+This system is over-determined for the given datasets because there are more measurements (\(20\) pairs of \(x, y\) values) than there are parameters to estimate (just two, \(a\) and \(c\)). Although over-determined systems may be well posed and have a unique solution and when all measurements are consistent with the true signal. However, in the presence of noise, the system will not have any exact solutions, where all data points lie perfectly on the same line. Instead, the objective is to find the best estimates for the parameters \(x = [a, c]\) that minimise the difference between the predicted line \( Ax \) and the observed data \( y \), via the objective function. In this problem, the \(L_2\) and \(L_1\) norms of the error vector, $\epsilon = y - Ax$, are explored as the objective functions. 
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2a_noisy_line.png}
+        \caption{}
+        \label{fig:line_data_1}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2a_noisy_line_outlier.png}
+        \caption{}
+        \label{fig:line_data_2}
+    \end{subfigure}%
+    \caption{Two datasets describing noisy measurements of points along a line: (a) Dataset 1 - line data with noisy observations (b) Dataset 2 - line data with noisy observations and a single outlier.}
+    \label{fig:line_fitting_data}
+\end{figure}
+% Describe the method used to solve the problem in 2a
+\subsubsection{Results}
+To minimise the objective function for the given datasets, the \texttt{minimize} function from the \texttt{scipy.optimize} library is employed. This function uses the SLSQP optimisation algorithm to find the minimum of the objective function \cite{Kraft1988}. The results of the line fitting for the two datasets are shown in Figure \ref{fig:line_fitting_results} and the estimated line parameters are summarised in Table \ref{tab:line_fitting_results}.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2a_fitted_line_1.png}
+        \caption{}
+        \label{fig:line_fit_1}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2a_fitted_line_2.png}
+        \caption{}
+        \label{fig:line_fit_2}
+    \end{subfigure}%
+    \caption{Results of line fitting using the SLSQP optimization algorithm to minimise the \(L_2\) and \(L_1\) error norms for the two datasets, which are shown in green and orange respectively: (a) Dataset 1, (b) Dataset 2 with the outlier.}
+    \label{fig:line_fitting_results}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{@{}llll@{}}
+    \toprule
+    \textbf{Dataset} & \textbf{Objective Function} & \textbf{Slope (a)} & \textbf{Intercept (c)} \\ \midrule
+    1               & \(L_2\) Norm                & 0.0665             & 0.2172                 \\
+                    & \(L_1\) Norm                & 0.0663             & 0.2429                 \\ \midrule
+    2               & \(L_2\) Norm                & 0.0462             & 0.5804                 \\
+                    & \(L_1\) Norm                & 0.0662             & 0.2458                 \\ \bottomrule
+    \end{tabular}
+    \caption{Summary of the estimated line parameters for the two datasets using the \(L_2\) and \(L_1\) error norms.}
+    \label{tab:line_fitting_results}
+\end{table}
+
+\subsubsection{Discussion}
+In the absence of outliers, both \(L_2\) and \(L_1\) norms provide comparable results for line fitting, indicating a robust estimation of parameters under normal noise conditions. However, when outliers are present, the \(L_1\) norm offers a more accurate estimation because it minimises the absolute errors, which reduces the impact of extreme values. Conversely, the \(L_2\) norm, which minimises the sum of squared errors, gives disproportionately high weight to outliers. This sensitivity causes the \(L_2\) norm to be more influenced by the outlier, skewing the line fit significantly away from the majority of the data points, as observed in the results for the second dataset.
+% Discuss the results of the problem in 2a - basically shows how l1 is more robust to outlier noise.
+
+\subsection{Part B - Compressed Sensing Reconstruction}
+
+\subsection{Part C - Multi-resolution Analysis}
+% Describe the concept of a compressible signal and an image maybe sparse in the wavelet domain.
+
+% Describe wavelet transform briefly and then introduce the plot
+
+% Explain the plot
+
+% Plot sho
+% Introduce the idea of wavelet represnetation of an image
+% Show the wavelet transform of the image, thresholded for top 15% of coefficients
+% Explain the image.
+% Show the reconstructions of the image from the thresholded coefficients at varying levels.
+% Explain what this means.
+
+
 \bibliographystyle{plain}  % Choose the style that suits your needs
 \bibliography{references}  % The filename of the .bib file, without the extension
 \end{document}
