@@ -43,9 +43,6 @@ def main(image):
     plt.savefig("report/figs/q1b_denoised.png", dpi=300, bbox_inches="tight")
     plt.show()
 
-    # Fit a KMeans model to the image.
-    kmeans = KMeans(n_clusters=4)
-
     # Use LAB colour space for clustering.
     image_lab = color.rgb2lab(denoised_image)
     pixels = image_lab.reshape((-1, 3))
@@ -73,6 +70,13 @@ def main(image):
 
     # Get the mask for the purple cluster.
     mask = cluster_image == closest_cluster_index
+    # Visualise the mask
+    plt.imshow(mask, cmap="gray")
+    # plt.title("K Means Purple Cluster Mask")
+    plt.axis("off")
+    plt.tight_layout()
+    plt.savefig("report/figs/q1b_kmeans_mask.png", dpi=300, bbox_inches="tight")
+    plt.show()
 
     # Perform opening with a ball of radius 2 to disconnect small regions.
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
@@ -83,7 +87,7 @@ def main(image):
     # plt.title("K Means Purple Cluster Mask")
     plt.axis("off")
     plt.tight_layout()
-    plt.savefig("report/figs/q1b_kmeans_mask.png", dpi=300, bbox_inches="tight")
+    plt.savefig("report/figs/q1b_kmeans_mask_post_opening.png", dpi=300, bbox_inches="tight")
     plt.show()
 
     # Keep only connected components with area greater than 100 pixels.
@@ -98,7 +102,7 @@ def main(image):
     # plt.title("Post Removing Small Connected Component Mask")
     plt.axis("off")
     plt.tight_layout()
-    plt.savefig("output_segs/q1b_mask_post_cnc_removal.png", dpi=300, bbox_inches="tight")
+    # plt.savefig("report/figs/q1b_mask_post_cnc_removal.png", dpi=300, bbox_inches="tight")
     plt.show()
 
     # Visualise the mask over the original image.
@@ -113,7 +117,7 @@ def main(image):
     plt.imshow(rgb_mask, cmap="jet", alpha=0.5)  # Use a colormap with good contrast.
     # plt.title("Mask Overlay")
     plt.axis("off")
-    plt.savefig("output_segs/q1b_final_mask.png", dpi=300, bbox_inches="tight")
+    # plt.savefig("report/figs/q1b_final_mask.png", dpi=300, bbox_inches="tight")
     plt.show()
 
 

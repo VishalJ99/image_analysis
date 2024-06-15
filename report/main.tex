@@ -1,5 +1,3 @@
-
-
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{geometry}
@@ -7,7 +5,6 @@
 \usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage{listings}
-\usepackage{xcolor}
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{algorithm}
@@ -23,9 +20,9 @@
 % Set up code listing style
 \lstset{
     basicstyle=\ttfamily,
-    commentstyle=\color{gray},
-    keywordstyle=\color{blue},
-    stringstyle=\color{red},
+    commentstyle=\colour{gray},
+    keywordstyle=\colour{blue},
+    stringstyle=\colour{red},
     showstringspaces=false,
     captionpos=b
 }
@@ -123,18 +120,127 @@ This section details the segmentation algorithm of the noisy flowers image shown
 \end{figure}
 
 \subsubsection{Image Characteristics}
-The image features a type of noise that is typical to gaussian degradations. The purple flowers, except for the ones clearly in the foreground are all of roughly the same colour. There are two main batches of purple flowers, one down the middle and another along the upper left corner of the image. The purple flowers in the foreground have shadows on them making the bottom half of the flower darker than the top half. Due to the general uniformity in colours of the flower, a clustering type algorithm is appropriate for this image.
+The image features a type of noise that is typical to gaussian degradations. This was confirmed by applying a gaussian filter to each of the colour channels seperately in the image and observing that nearby pixel colours were more. This effect is shown in Figure \ref{fig:gaussian_noise_evidence}. 
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.4\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_patch.png}  % Replace with your image file
+        \caption{}
+        \label{fig:flower_patch}
+    \end{subfigure}%
+    \begin{subfigure}{.4\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_gauss_blurred_patch.png}  % Replace with your image file
+        \caption{}
+        \label{fig:gaussian_filtered_flower_patch}
+    \end{subfigure}%
+    \caption{Effect of Gaussian filtering on the colour channels of the noisy flowers image: (a) Cropped region of the noisy flowers image, (b) Cropped region after applying a Gaussian filter with standard deviation 1.}
+    \label{fig:gaussian_noise_evidence}
+\end{figure}
+The purple flowers in \ref{fig:flowers_image}, except for the ones clearly in the foreground, are all roughly of the same shade of purple. There are two batches of purple flowers in the image, one large group down the middle and another smaller group along the upper left corner of the image. The purple flowers in the foreground have shadows on them making the bottom half of the flower darker than the top half. Due to the general uniformity in colours of the flower after denoising, a clustering type algorithm is appropriate for this image.
 
 \subsubsection{Assumptions}
 The main assumption made by this algorithm is in choosing the number of clusters. The number of clusters is chosen to be 5, which is chosen based on the number of distinct colours in the image. The green grass and stems, the orange flower heads, the purple flower heads, the white flower heads and the red flower heads.
 
 \subsubsection{Segmentation Algorithm}
+The segmentation algorithm for the noisy flowers image is as follows:
+\begin{itemize}
+    \item \textbf{Bilateral Gaussian Filtering:} First the image was denoised using a bilateral filter \cite{710815}. This filter was chosen for its ability to denoise while considering both spatial proximity and colour similarity, ideal for preserving flower head edges. A spatial standard deviation of 15 was chosen to allow for smoothing across the entire flower head regions, while a colour standard deviation of 1 ensures edge sharpness by only blending similarly coloured pixels. This approach effectively reduces noise without blurring distinct colour boundaries.
+    \item \textbf{Conversion from RGB to LAB colour Space:} The image is converted from RGB to LAB colour space, which better approximates human vision by separating colour and luminance. This space enhances clustering accuracy because Euclidean distances more closely reflect perceptual differences, making it ideal for grouping similar colours like purple flower heads.
+    \item \textbf{K-Means Clustering:} K-means clustering is applied to the LAB image. The number of clusters is chosen to be 5, based on the number of distinct colours in the image. The image is then segmented by assigning each pixel to the cluster with the closest centroid.
+    \item \textbf{Select Purple Pixels} The cluster centre closest to the the LAB value of purple is chosen to be the desired cluster to represent the foreground. The image is binarised by setting all pixels not in this cluster to 0 and all pixels in this cluster to 1.
+    \item \textbf{Denoise Segmentation via Morphological Opening} To remove small-scale noise from the mask while retaining the shape and size of the main flower heads, a morphological opening operation is applied. 
+    \item \textbf{Remove Small Connected Components:} Finally to remove any left over noise, all connected components with an area less than 100 pixels are removed. The previous morphological opening step ensures the required thresholding does not remove any of the main flower heads.
+\end{itemize}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.45\textwidth}  % Adjusted to fit two figures per row
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_denoised.png}
+        \caption{}
+        \label{fig:denoised_flowers}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}  % Adjusted to fit two figures per row
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_kmeans_mask.png}
+        \caption{}
+        \label{fig:kmeans_mask_flowers}
+    \end{subfigure}
+    \begin{subfigure}{.45\textwidth}  % New row, first column
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_kmeans_mask_post_opening.png}
+        \caption{}
+        \label{fig:kmeans_mask_post_opening_flowers}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}  % New row, second column
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_mask_post_cnc_removal.png}
+        \caption{}
+        \label{fig:cnc_threshold_flowers}
+    \end{subfigure}%
+    \caption{Segmentation process for the noisy flowers image: (a) Image after denoising with a bilateral filtering, showing reduced colour noise while preserving edge details. (b) Result of applying K-means clustering to segment purple pixels. (c) Segmentation mask post morphological opening, illustrating reduced noise in the segmentation. (d) Final segmentation after removing small connected components, highlighting the refined segmentation of flower regions.}
+    \label{fig:q1b_segmentation_steps}
+\end{figure}
 
+\subsubsection{Results}
+The final segmentation of the noisy flowers image is shown in Figure \ref{fig:q1b_final_mask}. The segmentation clearly captures most of the purple flower heads in the main central bunch. It also captures some in the smaller bunch in the upper left corner. It is able to distinguish between the colours effectively, with some of the orange and red flowers in the purple group being excluded from the segmentation quite effectively as seen in figure \ref{fig:flowers_seg_zoomed}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/q1b_final_mask.png}
+    \caption{Final segmentation of the noisy flowers image.}
+    \label{fig:q1b_final_mask}
+\end{figure}
 
+% TODO: Think of a better colouring scheme for the bounding boxes, white is washing out the image.
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[c]{.6\textwidth}  % Centered subfigure on the left
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_seg_w_good_bbox.png}
+        \caption{}  % Caption for the left subfigure
+        \label{fig:q1b_zoomed}
+    \end{subfigure}%
+    \begin{minipage}[c]{.35\textwidth}  % Centered minipage for the right subfigures
+        \begin{subfigure}{\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figs/q1b_zoomed_region1.png}
+            \caption{}  % Caption for the upper right subfigure
+            \label{fig:q1b_zoomed_bad}
+        \end{subfigure}\\[1ex]  % Add some space between the subfigures
+        \begin{subfigure}{\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figs/q1b_zoomed_region2.png}
+            \caption{}  % Caption for the lower right subfigure
+            \label{fig:q1b_zoomed_bad2}
+        \end{subfigure}
+    \end{minipage}
+    \caption{Zoomed in view of the segmentation: (a) Segmentation with bounding boxs around regions of interest where the segmentation has performed well, (b) Zoomed in view of the segmentation showing the exclusion of orange flower from the purple group, (c) Zoomed in view of the segmentation showing the exclusion of orange and red flowers that are occluded by flowers from the purple group.}
+    \label{fig:flowers_seg_zoomed}
+\end{figure}
 
+\subsubsection{Discussion}
+The main challenge in this segmentation is the segmentation of the purple flower heads that are in the foreground (closest to the camera). These flower heads have shadows on them, making the bottom half of the flower darker than the top half, making them difficult to fully segment with the current approach. An example such case is shown in figure \ref{fig:q1b_seg_lim}. This highlights the limitations of a segmentation algorithm which segments purely on colour. A potential improvement to this algorithm would be to consider spatial shape based information to better segment these flower heads or make use of more sophisticated pre-processing to remove the shadows.
+% TODO: Make it clearer where the seg is failing, right now the masks are not showing in the zoomed regions so not obvious
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.8\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_seg_w_bad_bbox.png}
+        \caption{}  % Optional: add a specific caption here if needed.
+        \label{fig:q1b_bad_seg_w_bbox}
+    \end{subfigure}\\ % Add a line break to stack the next subfigure below
+    \begin{subfigure}{.8\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1b_bad_zoomed_region.png}
+        \caption{}  % Optional: add a specific caption here if needed.
+        \label{fig:q1b_bad_zoom}
+    \end{subfigure}
+    \caption{Limitations in segmentation of noisy flowers image: (a) Full view of the image with poorly segmented areas highlighted in a bounding box, demonstrating where the algorithm fails to accurately segment due to shadows. (b) Close-up view of a poorly segmented area, showing flower heads which feature strong shadows, impacting segmentation accuracy.}
+    \label{fig:q1b_seg_lim}
+\end{figure}
 
-\maketitle
-
-
+\bibliographystyle{plain}  % Choose the style that suits your needs
+\bibliography{references}  % The filename of the .bib file, without the extension
 \end{document}
