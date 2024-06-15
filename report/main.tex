@@ -50,7 +50,6 @@ The image shows a high contrast between the lungs and surrounding non lung tissu
 The algorithm assumes that after binarising the image via thresholding, the background makes up the largest connected component, with the left and right lungs being the next two largest. The algorithm also assumes that the nodules and tissue within the lung regions are fully enclosed and do not touch the border of the lung regions.
 
 \subsubsection{Segmentation Algorithm}
-The segmentation algorithm for the lung CT image is as follows:
 \begin{itemize}
     \item \textbf{Binarise Image via Otsu Thresholding:} The image is thresholded using Otsu's threshold. This is a global thresholding method that maximises the inter-class variance of foreground and background. 
     \item \textbf{Connected Component Analysis:} The binary image is inverted to make the lung and background regions the foreground. The connected components of the inverted image are labelled using 8-connectivity. The second and third largest connected components are selected to recover the left and right lung regions. The connected components are selected based on their area. 
@@ -144,7 +143,6 @@ The purple flowers in \ref{fig:flowers_image}, except for the ones clearly in th
 The main assumption made by this algorithm is in choosing the number of clusters. The number of clusters is chosen to be 5, which is chosen based on the number of distinct colours in the image. The green grass and stems, the orange flower heads, the purple flower heads, the white flower heads and the red flower heads.
 
 \subsubsection{Segmentation Algorithm}
-The segmentation algorithm for the noisy flowers image is as follows:
 \begin{itemize}
     \item \textbf{Bilateral Gaussian Filtering:} First the image was denoised using a bilateral filter \cite{710815}. This filter was chosen for its ability to denoise while considering both spatial proximity and colour similarity, ideal for preserving flower head edges. A spatial standard deviation of 15 was chosen to allow for smoothing across the entire flower head regions, while a colour standard deviation of 1 ensures edge sharpness by only blending similarly coloured pixels. This approach effectively reduces noise without blurring distinct colour boundaries.
     \item \textbf{Conversion from RGB to LAB colour Space:} The image is converted from RGB to LAB colour space, which better approximates human vision by separating colour and luminance. This space enhances clustering accuracy because Euclidean distances more closely reflect perceptual differences, making it ideal for grouping similar colours like purple flower heads.
@@ -241,6 +239,120 @@ The main challenge in this segmentation is the segmentation of the purple flower
     \label{fig:q1b_seg_lim}
 \end{figure}
 
+\subsection{Part C: Coin Image Segmentation}
+This section details the segmentation algorithm of the coin image shown in Figure \ref{fig:coins_image}. The region to be segmented are the first coin in the first row, the second coin in the second row, the third coin in the third row and the fourth coin in the fourth row.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{../data/coins.png}
+    \caption{Coin image.}
+    \label{fig:coins_image}
+\end{figure}
+
+\subsubsection{Image Characteristics}
+The image has been degraded with vertical line type artefacts. These artefacts have likely been synthetically generated and can be corrected by filtering. There is generally good contrast between the coins and the background, however fig \ref{fig:otsu_threshold_coins}, applying an otsu threshold reveals that the coins in the first row are not clearly separated from the background. Edge detection to segment the coins is likely to perform better in this case.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figs/q1c_otsu_thresholded.png}  % Replace with your image file
+    \caption{Effect of Otsu thresholding on the coin image.}
+    \label{fig:otsu_threshold_coins}
+\end{figure}
+
+\subsubsection{Assumptions}
+To select the required coins for the task, the algorithm assumes that the coins are arranged in 4 rows with 6 columns, without making prior assumptions on what coin belongs to which position in the grid. The algorithm also assumes that the coins are not touching each other. Lastly, it assumes that the background is the largest connected component in the image.
+\subsubsection{Segmentation Algorithm}
+
+\begin{itemize}
+\item \textbf{Row-wise Median Filtering:} Initially, a row-wise median filter is applied to the image to remove vertical line artefacts. This step is crucial to recover high quality edges for subsequent edge detection.
+\item \textbf{Edge Detection with Canny:} Canny edge detection is a multi-stage algorithm that uses Gaussian smoothing to reduce noise, then detects edges by identifying areas with high gradient magnitudes. It employs a double threshold to classify edges into strong, weak, and non-edges: strong edges exceed the high threshold and are confirmed as true edges; weak edges between the two thresholds are only confirmed if connected to strong edges; and areas below the low threshold are dismissed as non-edges. This method ensures robust edge continuity and noise suppression.
+\item \textbf{Dilation of Edges:} After detecting edges, a dilation operation is performed using an elliptical structuring element. This step helps to close small gaps in the detected edges, which aids in forming continuous outlines for the coins.
+\item \textbf{Removal of the Largest Component:} The resulting image is then inverted and connected components are labelled. The largest connected component is assumed to be the background and is removed.
+\item \textbf{Integration of Edges and Mask:} Edges detected from the Canny step are added to the mask of coins to enhance the definitions of the coins' borders and 'close' the coins so that the mask is more faithful to the actual coin shapes.
+\item \textbf{Binary Hole Filling:} A binary hole filling operation is then performed to fill any unsegmented areas within each coin. 
+\item \textbf{Median Filtering on Mask:} Finally, to remove spurious regions of the mask which arose from edges that did not belong to any coins, both row-wise and column-wise median filtering is applied to the mask. This step removes regions that are not part of the coins. This step ensures that the next step of removing small components need not require too large a threshold, risking the removal of actual coins.
+\item \textbf{Removal of Small Connected Components:} Finally, any small connected components with an area less than 100 pixels are removed from the mask. This step ensures that only the coins are retained in the final mask.
+\item \textbf{Sorting and Assigning Grid Positions:} The centroids of the coin masks are then sorted based on their vertical and horizontal coordinates to assign each coin a grid position. 
+\item \textbf{Selecting Specific Coins:} The coins whose grid position matches the required positions are selected.
+
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_init_median_filtered.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_canny_edges.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_dilated_inverted_edges.png}
+        \caption{}
+    \end{subfigure}%
+
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_connected_components.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_mask_no_bg.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_mask_edges.png}
+        \caption{}
+    \end{subfigure}%
+
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_binary_hole_filled.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_median_filtered_mask.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.33\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_mask_no_small_components.png}
+        \caption{}
+    \end{subfigure}%
+
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_identified_coins.png}
+        \caption{}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1c_selected_coins.png}
+        \caption{}
+    \end{subfigure}%
+    
+    \caption{Detailed steps of the coin segmentation process including: (a) Initial median filtering to remove line artefacts, (b) Canny edge detection to outline the coins, (c) Dilated edges to enhance edge continuity, (d) Identification of connected components to identify background, (e) Mask after background removal, (f) Mask integrated with edges to refine the coin outlines, (g) Binary hole filling to complete the interior of the coins, (h) Median filtered mask to remove spurious edges, (i) Final segmentation after eliminating small connected components to isolate individual coins, (j) Identified coins with their grid positions, (k) Selected coins based on specified positions.}
+    \label{fig:coin_segmentation_steps}
+\end{figure}
+
+\subsubsection{Results}
+The final segmentation of the coin image is shown in Figure \ref{fig:q1c_selected_coins}. The segmentation clearly captures the required coins in the specified grid positions.  
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/q1c.png}
+    \caption{Final segmentation of the coin image.}
+    \label{fig:q1c_selected_coins}
+\end{figure}
+
+\subsubsection{Discussion}
+The chosen method works almost perfectly, the only issue is that the median filtering and edge dilation steps can result in the final mask being slightly unfaithful to the actual coin shapes around the edge. However, with more experimentation the current approach could be improved to better capture the coin shapes.
 \bibliographystyle{plain}  % Choose the style that suits your needs
 \bibliography{references}  % The filename of the .bib file, without the extension
 \end{document}
