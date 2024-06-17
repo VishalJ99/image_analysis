@@ -13,6 +13,8 @@
 \usepackage{siunitx}
 \usepackage{amssymb}
 \usepackage{subcaption}
+\usepackage{natbib}  % Or another suitable package for bibliography management
+\DeclareMathOperator*{\argmin}{arg\,min}  % The asterisk ensures that subscripts are positioned correctly in display style.
 
 % Set page margins
 \geometry{a4paper, margin=1in}
@@ -355,27 +357,8 @@ The final segmentation of the coin image is shown in Figure \ref{fig:q1c_selecte
 The chosen method works almost perfectly, the only issue is that the median filtering and edge dilation steps can result in the final mask being slightly unfaithful to the actual coin shapes around the edge. However, with more experimentation the current approach could be improved to better capture the coin shapes.
 
 \section{Question 2 - Inverse Problems and Multi-resolution analysis}
-\subsection{Part A - Inverse Problems}
-% Introduce the problem in 2a: y = Ax + b, as a common inverse problem. Line fitting based on some noisy measurements of the line is an example of such a problem.
-\subsubsection{Motivation}
-In many scientific and engineering contexts, problems can be modelled as a linear system of equations, expressed as 
-\[
-y = Ax + b,
-\]
-where:
-\begin{itemize}
-    \item \(y\) is the vector of measurements,
-    \item \(x\) represents the unknown vector of the underlying signal or model parameters.
-    \item \(A\) is the system matrix that defines how measurements \(y\) relate to the signal / parameter vector \(x\).
-    \item \(b\) is the (typically unknown) vector representing noise or measurement errors.
-\end{itemize}
-
-The challenge lies in recovering the unknown vector \(x\) from the measurements \(y\). However, such systems are rarely well-posed; it is not possible to invert the matrix \(A\) and obtain a unique solution. It is more typically for these systems to fall into the categories of being either over-determined, with more measurements than unknowns, or under-determined, with more unknowns than measurements.
-
-In such cases, finding a solution involves minimising an objective function that quantifies the error between the observed measurements and those predicted by the model. This process is complemented by incorporating regularisation terms, which are required to find a unique solution in the under determined regime. 
-
-\subsubsection{Problem Set Up}
-In this scenario, the goal is to fit a line described by the equation \( y = ax + c \) to a dataset consisting of noisy measurements. This is a typical example of a linear inverse problem where we aim to determine the parameters of a line, which in matrix terms can be framed as:
+\subsection{Part A - Solving Over Determined Inverse Problems: Line Fitting}
+In this scenario, the goal is to fit a line described by the equation \( y = ax + c \) to a dataset consisting of noisy measurements. This is a typical example of a linear inverse problem where we aim to determine the parameters of a line, which in mathematical terms can be framed as:
 \[
 y = Ax + b.
 \]
@@ -445,24 +428,234 @@ To minimise the objective function for the given datasets, the \texttt{minimize}
 \end{table}
 
 \subsubsection{Discussion}
-In the absence of outliers, both \(L_2\) and \(L_1\) norms provide comparable results for line fitting, indicating a robust estimation of parameters under normal noise conditions. However, when outliers are present, the \(L_1\) norm offers a more accurate estimation because it minimises the absolute errors, which reduces the impact of extreme values. Conversely, the \(L_2\) norm, which minimises the sum of squared errors, gives disproportionately high weight to outliers. This sensitivity causes the \(L_2\) norm to be more influenced by the outlier, skewing the line fit significantly away from the majority of the data points, as observed in the results for the second dataset.
-% Discuss the results of the problem in 2a - basically shows how l1 is more robust to outlier noise.
+In the absence of outliers, both \(L_2\) and \(L_1\) norms provide comparable results for line fitting. However, when outliers are present, the \(L_1\) norm offers a more accurate estimation because it minimises the absolute errors, which reduces the impact of extreme values. Conversely, the \(L_2\) norm, which minimises the sum of squared errors, gives disproportionately high weight to outliers. This sensitivity causes the \(L_2\) norm to be more influenced by the outlier, skewing the line fit significantly away from the majority of the data points, as observed in the results for the second dataset.
 
-\subsection{Part B - Compressed Sensing Reconstruction}
 
-\subsection{Part C - Multi-resolution Analysis}
-% Describe the concept of a compressible signal and an image maybe sparse in the wavelet domain.
 
-% Describe wavelet transform briefly and then introduce the plot
+\subsection{Part B - Compressed Sensing Reconstruction and Underdetermined Inverse Problems}
+% Introduce the problem 
+This question explores signal reconstruction within the compressed sensing framework, which leverages a powerful observation: many signals of interest are sparse when represented in an appropriate basis. Mathematically, a signal \( x \in \mathbb{R}^n \) is considered \( K \) sparse if it can be expressed as \( x = \Psi s \) where \( \Psi \) is some universal basis matrix and \( s \) has only \( K \) non-zero elements, with \( K \ll n \). Compressed sensing capitalizes on this sparsity to reconstruct signals from measurements taken below the traditional Nyquist rate, which dictates the minimum number of uniform samples needed to avoid aliasing. In the compressed sensing paradigm, measurements \( y \) are obtained by sub sampling with a non-uniform or random measurement matrix \( C \). The goal is to recover the original signal \( x \) by solving the underdetermined system of equations for \( s \) and applying the transformation \( \Psi \) to reconstruct the signal. To solve the underdetermined system, a solution is sought that minimises the \( L_1 \) norm of the coefficient vector \( s \) under the constraint that the measurements \( y \) are consistent with the signal model. The \( L_1 \) norm is used as a regularisation term to promote sparsity in the solution, leveraging the prior knowledge that the signal is sparse in the transformed domain. Mathematically, this problem can be represented as the following optimisation problem:
+\[
+\argmin_{s} \left\| s \right\|_1 \quad \text{subject to} \quad y = C \Psi s.
+\]
 
-% Explain the plot
+This problem can be solved iteratively using a combination of soft thresolding in the sparse domain and enforcing consistency in the measurement domain \cite{doi:10.1137/080716542}. 
 
-% Plot sho
-% Introduce the idea of wavelet represnetation of an image
-% Show the wavelet transform of the image, thresholded for top 15% of coefficients
-% Explain the image.
-% Show the reconstructions of the image from the thresholded coefficients at varying levels.
-% Explain what this means.
+\paragraph*{Conditions for Compressed Sensing}
+Beyond the requirement of signal sparsity in the transformed domain, successful application of compressed sensing requires the following conditions to be satisfied:
+\begin{enumerate}
+    \item \textbf{Incoherence of Measurement Matrix:}
+    The measurement matrix \( C \) must be incoherent with respect to the sparsifying basis \( \Psi \). Incoherence here implies that the rows of \( C \) are not correlated with the columns of \( \Psi \). High incoherence between \( C \) and \( \Psi \) ensures that the measurements \( y \) contain sufficient information about all the components of the sparse signal \( s \), thereby facilitating accurate recovery even from fewer observations.
+    
+    \item \textbf{Sufficient Number of Measurements:}
+    The minimum number of measurements \( p \) must be of the order of:
+    \[
+    p \approx O(K \log(N/K))),
+    \]
+    where \( K \) is the sparsity level (number of non-zero entries in \( s \)), \( N \) is the dimension of the signal \( x \).
+\end{enumerate}
+
+\subsubsection{Problem Set Up}
+To practically demonstrate compressed sensing reconstruction, a 1D sparse signal \( s \) of size 100 is generated with only 10 non-zero coefficients. To simulate real world conditions, zero mean gaussian noise is added with standard deviation 0.05 to the signal. This is the sparse signal in the time domain. The signal is then transformed into the fourier domain using the discrete fast fourier transform (DFFT) to obtain the non sparse spectra \( x \). The sparse signal and its fourier transform are shown in Figure \ref{fig:compressed_sensing_signal}. Therefore, \( x = \Psi s \) where \( \Psi \) is the DFFT matrix. 
+\begin{figure} [H]
+    \centering
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_original_sparse_signal_fft.png}
+        \caption{Frequency domain}
+        \label{fig:sparse_signal_fourier}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_original_sparse_signal.png}
+        \caption{Time Domain}
+        \label{fig:sparse_signal}
+    \end{subfigure}%
+
+    \caption{Generated signal expressed in sparse and non sparse domains: (a) Non sparse signal \( x\) in the fourier domain, (b) sparse signal \( s \) in the time domain.}
+    \label{fig:compressed_sensing_signal}
+\end{figure}
+
+These signals can be seen in Figure \ref{fig:compressed_sensing_signal}. The signal in the non sparse measurement domain, \(x\), is then sub sampled under uniform and random strategies to obtain two sets of 32 measurements \( y \). These sub sampled signals are shown in Figure \ref{fig:compressed_sensing_sub_sampled_signals} in both the time and frequency domains. Note that a correction factor is applied to the IDFFT of \(y\) to account for the sub sampling.
+
+\begin{figure}[H]
+    \centering
+    % Uniform Sampling Subfigures
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_uniformly_subsampled_signal_fft.png}
+        \caption{Uniform Sampling - Frequency Domain}
+        \label{fig:uniform_subsampled_signal_fft}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_uniformly_subsampled_signal.png}
+        \caption{Uniform Sampling - Time Domain}
+        \label{fig:uniform_subsampled_signal}
+    \end{subfigure}
+    
+    % Random Sampling Subfigures
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_randomly_subsampled_signal_fft.png}
+        \caption{Random Sampling - Frequency Domain}
+        \label{fig:random_subsampled_signal_fft}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_randomly_subsampled_signal.png}
+        \caption{Random Sampling - Time Domain}
+        \label{fig:random_subsampled_signal}
+    \end{subfigure}
+    
+    \caption{Comparison of uniformly and randomly subsampled \( y \) in both the non-sparse and sparse domains. Top row: Uniform sampling in (a) Fourier domain and (b) time domain. Bottom row: Random sampling in (c) Fourier domain and (d) time domain.}
+    \label{fig:compressed_sensing_sub_sampled_signals_combined}
+\end{figure}
+
+\subsubsection{Results}
+Using iterative soft thresholding and enforcing consistency in the measurement domain, the original sparse signal \( s \) is reconstructed from the sub sampled measurements \( y \). The reconstructed signals under uniform and random sampling strategies are shown in Figure \ref{fig:full_comparison}. The reconstructed signals in the frequency domain are shown in Figure \ref{fig:full_comparison}.
+
+\begin{figure}[H]
+    \centering
+    % Original Signal Subfigures
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_original_sparse_signal_fft.png}
+        \caption{Original - Frequency}
+        \label{fig:original_signal_fft}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_original_sparse_signal.png}
+        \caption{Original - Time}
+        \label{fig:original_signal}
+    \end{subfigure}
+
+    % Reconstructed Signal Subfigures
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_uniformly_recovered_signal_fft.png}
+        \caption{Reconstructed (Uniform) - Frequency}
+        \label{fig:uniform_reconstructed_signal_fft}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_uniformly_recovered_signal.png}
+        \caption{Reconstructed (Uniform) - Time}
+        \label{fig:uniform_reconstructed_signal}
+    \end{subfigure}
+    
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_randomly_recovered_signal_fft.png}
+        \caption{Reconstructed (Random) - Frequency}
+        \label{fig:random_reconstructed_signal_fft}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2b_randomly_recovered_signal.png}
+        \caption{Reconstructed (Random) - Time }
+        \label{fig:random_reconstructed_signal}
+    \end{subfigure}
+    
+    \caption{Comparison of the original and reconstructed signals under uniform and random sampling strategies in both the non-sparse and sparse domains.}
+    \label{fig:full_comparison}
+\end{figure}
+
+It is clear from the results that the reconstruction has been successful for both the uniform and random sampling strategies. With the random sampling strategy presenting a better reconstruction.
+\subsubsection{Discussion}
+
+
+
+% Explain how regularisation can be used to solve the problem and why L1 norm is used.
+
+% Describe how there is still some conditions on the number of measurements we need for faithful reconstruction.
+
+% Introduce the signal 
+
+\subsection{Part C - Compressed Reconstruction and Multi-resolution Analysis}
+This question focuses on the reconstruction of the image shown in Fig \ref{fig:river_side}, using a varying subset of its wavelet coefficients. The motivation is to demonstrate how natural images can have sparse representations in the another domain.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{../data/river_side.jpeg}
+    \caption{River side image.}
+    \label{fig:river_side}
+\end{figure}
+
+\subsection{Discrete Wavelet Transform of the Image}
+The image first cropped to remove the white space padding and then transformed into the wavelet domain using the discrete wavelet transform (DWT) using the Daubechies wavelet as the mother wavelet and 3 levels of frequency decomposition. To visualize the wavelet coefficients, they are thresholded to retain only the top 15\% of the coefficients. These are shown in Fig \ref{fig:wavelet_coefficients}, where the coefficients corresponding to various frequency scales are stacked in a hierarchical fashion. The upper-left quadrant represents the low-frequency components,  The remaining quadrants display higher frequency details at various orientations (horizontal, vertical, and diagonal). The most significant point is how most of the energy is concentrated in the low-frequency components, while the high-frequency components show more sparse activation, illustrating the sparsity of natural images in the wavelet domain.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{figs/q2c_river_side_wavelet_transform.jpeg}
+    \caption{Thresholded Daubechies wavelet transform of the river side image, showing the top 15\% coefficients for 3 levels of decomposition.}
+    \label{fig:wavelet_coefficients}
+\end{figure}
+
+The image can be reconstructed using the inverse DWT. The original, reconstruction and difference images are shown in Fig \ref{fig:full_reconstruction}, the negligible mean squared error between the reconstruction and original image illustrates how near perfect reconstruction can be achieved from the discrete set of wavelet coefficients. 
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_original.jpeg}
+        \caption{Original Image}
+        \label{fig:original_image}
+    \end{subfigure}%
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_reconstructed.jpeg}
+        \caption{Reconstructed Image}
+        \label{fig:reconstructed_image}
+    \end{subfigure}%
+    
+    \begin{subfigure}{.45\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_difference.jpeg}
+        \caption{Difference Image}
+        \label{fig:difference_image}
+    \end{subfigure}%
+    \caption{Comparison of the original and reconstructed river side images, along with the difference image.}
+    \label{fig:full_reconstruction}
+\end{figure}
+
+
+\subsection{Image Reconstruction with Selective Coefficient Retention}
+The reconstructed images, displayed in Figure~\ref{fig:thresholded_reconstruction}, result from retaining varying percentages of the largest wavelet coefficients---20\%, 10\%, 5\%, and 2.5\%. A discrete wavelet transform with two levels of decomposition is employed to make the effect of  the coefficient retention more pronounced. It is apparent that the quality of reconstruction diminishes as fewer coefficients are retained, particularly affecting areas of the image rich in high-frequency details. Remarkably, even with only 10\% of the coefficients preserved, the image reconstruction remains a highly accurate depiction of the original, underscoring the inherent sparsity of natural images in the wavelet domain.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.9\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_threshold_0_2.jpeg}
+        \caption{Reconstruction with top 20\% of coefficients retained}
+        \label{fig:reconstructed_20}
+    \end{subfigure}
+    
+    \begin{subfigure}{.9\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_threshold_0_1.jpeg}
+        \caption{Reconstruction with top 10\% of coefficients retained}
+        \label{fig:reconstructed_10}
+    \end{subfigure}
+    
+    \begin{subfigure}{.9\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_threshold_0_05.jpeg}
+        \caption{Reconstruction with top 5\% of coefficients retained}
+        \label{fig:reconstructed_5}
+    \end{subfigure}
+    
+    \begin{subfigure}{.9\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q2c_river_side_threshold_0_025.jpeg}
+        \caption{Reconstruction with top 2.5\% of coefficients retained}
+        \label{fig:reconstructed_2_5}
+    \end{subfigure}
+    
+    \caption{Reconstruction of the river side image using varying levels of coefficient retention.}
+    \label{fig:thresholded_reconstruction}
+\end{figure}
 
 
 \bibliographystyle{plain}  % Choose the style that suits your needs
