@@ -47,8 +47,7 @@ def main(lr):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Gradient Descent Optimization")
+    parser = argparse.ArgumentParser(description="Gradient Descent Optimization")
     parser.add_argument(
         "--lr", type=float, default=0.5, help="Learning rate (step size)"
     )
