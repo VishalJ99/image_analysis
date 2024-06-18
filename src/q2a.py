@@ -41,15 +41,31 @@ def main():
 
     # Print results in the terminal (COPILOT GENERATED CODE)
     print("Results for y_line (No Outliers):")
-    print("L1 Norm - Slope: {:.3f}, Intercept: {:.3f}".format(*result_l1_y_line.x))
-    print("L2 Norm - Slope: {:.3f}, Intercept: {:.3f}".format(*result_l2_y_line.x))
+    print(
+        "L1 Norm - Slope: {:.3f},\
+          Intercept: {:.3f}".format(
+            *result_l1_y_line.x
+        )
+    )
+    print(
+        "L2 Norm - Slope: {:.3f},\
+          Intercept: {:.3f}".format(
+            *result_l2_y_line.x
+        )
+    )
 
     print("\nResults for y_outlier_line (With Outliers):")
     print(
-        "L1 Norm - Slope: {:.3f}, Intercept: {:.3f}".format(*result_l1_y_outlier_line.x)
+        "L1 Norm - Slope: {:.3f},\
+        Intercept: {:.3f}".format(
+            *result_l1_y_outlier_line.x
+        )
     )
     print(
-        "L2 Norm - Slope: {:.3f}, Intercept: {:.3f}".format(*result_l2_y_outlier_line.x)
+        "L2 Norm - Slope: {:.3f},\
+        Intercept: {:.3f}".format(
+            *result_l2_y_outlier_line.x
+        )
     )
 
     # Plotting the results
@@ -80,7 +96,7 @@ def main():
 
     plt.tight_layout()
     plt.savefig("outputs/q2a.png", dpi=300, bbox_inches="tight")
-    plt.show()
+    print("[INFO] Plot saved at 'outputs/q2a.png'")
 
 
 if __name__ == "__main__":
