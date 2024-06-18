@@ -68,7 +68,7 @@ def otsu_threshold_from_scratch(image: np.ndarray) -> int:
     return threshold
 
 
-def label_from_scratch(image: np.ndimage, connectivity: int = 2) -> np.ndarray:
+def label_from_scratch(image: np.ndarray, connectivity: int = 2) -> np.ndarray:
     """
     Following algorithm detailed in:
     https://en.wikipedia.org/wiki/Connected-component_labeling. Label the
