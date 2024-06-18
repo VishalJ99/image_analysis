@@ -14,6 +14,7 @@
 \usepackage{amssymb}
 \usepackage{subcaption}
 \usepackage{natbib}  % Or another suitable package for bibliography management
+
 \DeclareMathOperator*{\argmin}{arg\,min}  % The asterisk ensures that subscripts are positioned correctly in display style.
 
 % Set page margins
@@ -657,6 +658,155 @@ The reconstructed images, displayed in Figure~\ref{fig:thresholded_reconstructio
     \label{fig:thresholded_reconstruction}
 \end{figure}
 
+\section{Question 3 - Solving inverse problems}
+\subsection{Part A - Convergence Rate of Gradient Descent}
+% Introduce problem objective - function, set up, goal
+In this exercise, the function $ f : \mathbb{R}^2 \rightarrow \mathbb{R} $ is considered, defined as $ f(\mathbf{x}) = \frac{1}{2} x_1^2 + x_2^2 $. The task is to minimise the function using gradient descent, starting from the initial point $ \mathbf{x}_0 = \begin{bmatrix} 1 \\ 1 \end{bmatrix} $. The goal is to theoretically determine the number of iterations $ K $ required to achieve a specified accuracy, defined as $ f(x) - f(x_*)$ where $x_*$ is the optimal solution, less than $ 0.01 $. This prediction is then compared to computational results.
+
+\subsubsection{Proving \(f \) is Convex}
+First the function convexity is verified by considering the Hessian matrix of \( f \): 
+\[
+H_f(\mathbf{x}) = \begin{bmatrix} 1 & 0 \\ 0 & 2 \end{bmatrix}
+\]
+This matrix is constant and has positive eigenvalues (1 and 2) for all \( \mathbf{x} \in  \mathbb{R}^2 \), indicating that \( f \) is convex over the entire domain.
+
+\subsubsection{Identifying the Lipschitz Constant of the Gradient of \( f \)}
+
+The Lipschitz constant of the gradient of \( f \) is determined by considering the function \( f \) with the following gradient:
+\[
+\nabla f(\mathbf{x}) = \begin{bmatrix} x_1 \\ 2x_2 \end{bmatrix}.
+\]
+
+The Lipschitz constant \( L \) is derived through the application of the definition of the Lipschitz continuity property of the gradient of \( f \):
+\[
+\| \nabla f(\mathbf{x}) - \nabla f(\mathbf{x'}) \|_2 \leq L \| \mathbf{x} - \mathbf{x'} \|_2,
+\]
+where \( \mathbf{x} \) and \( \mathbf{x'} \) represent any two points in the domain of \( f \). 
+
+The norm of the gradient difference is calculated as follows:
+\[
+\| \nabla f(\mathbf{x}) - \nabla f(\mathbf{x'}) \|_2 = \left\| \begin{bmatrix} x_1 - x'_1 \\ 2x_2 - 2x'_2 \end{bmatrix} \right\|_2 = \sqrt{(x_1 - x'_1)^2 + 4(x_2 - x'_2)^2}.
+\]
+
+\[
+\sqrt{(x_1 - x'_1)^2 + 4(x_2 - x'_2)^2} \leq \sqrt{4} \cdot \sqrt{(x_1 - x'_1)^2 + (x_2 - x'_2)^2} = 2 \cdot \|\mathbf{x} - \mathbf{x'}\|_2.
+\]
+
+To confirm rigorously that any constant \( L < 2 \) does not satisfy the Lipschitz continuity property, specific vectors \( \mathbf{x} \) and \( \mathbf{x'} \) are considered such that the inequality is challenged. Specifically, if \( \mathbf{x} = \begin{bmatrix} 0 \\ x_2 \end{bmatrix} \) and \( \mathbf{x'} = \begin{bmatrix} 0 \\ x'_2 \end{bmatrix} \) are selected, where \( x_2 \) and \( x'_2 \) are any real numbers, the following is observed:
+\[
+\| \nabla f(\mathbf{x}) - \nabla f(\mathbf{x'}) \|_2 = 2 |x_2 - x'_2| = 2 \|\mathbf{x} - \mathbf{x'}\|_2.
+\]
+
+\[
+2 \|\mathbf{x} - \mathbf{x'}\|_2 > L \|\mathbf{x} - \mathbf{x'}\|_2 \quad \forall L < 2.
+\]
+Therefore, it is shown that for \( L < 2 \), the inequality does not hold.
+
+\subsubsection{Finding the Optimal Solution}
+The next step is to identify the optimal solution \( \mathbf{x}^* \) of the function \( f \) by solving the gradient equation. \( \nabla f(\mathbf{x}) = \mathbf{0} \). The gradient of \( f \) is given by:
+\[
+\nabla f(\mathbf{x}) = \begin{bmatrix} x_1 \\ 2x_2 \end{bmatrix}.
+\]
+The single solution to this system of equations are \( x_1 = 0 \) and \( x_2 = 0 \), thus there is a single optimal solution at the origin \( \mathbf{x}^* = \begin{bmatrix} 0 \\ 0 \end{bmatrix} \).
+
+\subsection{Theoretical Convergence Rate}
+Now that \(f\) is confirmed to be convex and the Lipschitz constant of the gradient is determined, the following bound for a convex and L-smooth can be used:
+$$
+    f(\mathbf{x}_K) - f(\mathbf{x}_*) \leq \frac{L \|\mathbf{x}_0 - \mathbf{x}^*\|_2^2}{2K},
+$$
+
+Thus, the above inequality can be rearranged to give a bound on the number of iterations $K$ to achieve the desired accuracy. 
+\[
+K \leq \frac{L \|\mathbf{x}_0 - \mathbf{x}^*\|_2^2}{2(f(\mathbf{x}_K) - f(\mathbf{x}^*))}
+\]
+
+Substituting the values of \( L = 2 \), \( \|\mathbf{x}_0 - \mathbf{x}^*\|^2_2 = 2 \) and \(f(\mathbf{x}_K) - f(\mathbf{x}^*) = 0.01 \) into the equation, the theoretical number of iterations required to achieve the specified accuracy is calculated as \( K \leq 200 \).
+
+\subsection{Practical Convergence Rate}
+To practically determine the number of iterations required to achieve the specified accuracy, the gradient descent algorithm is implemented in Python with a learning rate of \( \alpha = \frac{1}{L} = \frac{1}{2} \). The algorithm is run starting at 
+\( \mathbf{x}_0 = \begin{bmatrix} 1 \\ 1 \end{bmatrix} \) and iterated until the difference between the function at the current point and the optimal solution is less than 0.01. The number of iterations required to achieve this accuracy is found to be 3, which while consistent with the theoretical prediction, is two orders of magnitude lower.
+
+\subsection{Strong Convexity of the Function}
+The primary reason for the observed convergence rate being significantly lower than the theoretical bound is that the strong convexity of the function has not considered. A function \( f \) is strongly convex with parameter \( \mu \) if the following holds:
+\[
+\nabla^2 f(\mathbf{x}) \succeq \mu \mathbf{I} \quad \forall \mathbf{x} \in \mathbb{R}^2,
+\]
+where \( \nabla^2 f(\mathbf{x}) \) is the Hessian matrix of \( f \) and \( \mathbf{I} \) is the identity matrix. The Hessian matrix of \( f \) is given by:
+\[
+H_f(\mathbf{x}) = \begin{bmatrix} 1 & 0 \\ 0 & 2 \end{bmatrix}.
+\]
+
+Which is equivalent to stating that \( H_f(\mathbf{x}) - \mu \mathbf{I} \) must be positive semi-definite for all \( \mathbf{x} \in \mathbb{R}^2 \). The smallest value of \( \mu \) that satisfies this condition is 1.
+
+Now that \( f \) is confirmed to be strongly convex with \( \mu = 1 \), the following bound for a strongly convex and L-smooth function can be used:
+% Derive the convergence rate if word count available.
+
+\[
+\|\mathbf{x}_K - \mathbf{x}^*\|_2^2 \leq \left(1 - \frac{\mu}{L}\right)^K \|\mathbf{x}_0 - \mathbf{x}^*\|_2^2
+\]
+
+This can be seen to give a convergence rate of $\mathcal{O}\left(\frac{1}{\epsilon}\right)$, where $\epsilon$ is the desired accuracy. In this case the convergence rate order evaluates to approximately 5 which is more consistent with the practical results.
+
+\subsection{Part B - Data Driven and Model Driven Reconstruction}
+This exercise compares the performance of data-driven and model-driven approaches for solving the image reconstruction inverse problem. Here the goal is to minimise the objective function:
+\[
+\min_{\mathbf{x}} \left\| \mathbf{y} - \mathbf{A} \mathbf{x} \right\|_2^2 + \lambda \left\| \mathbf \nabla \mathbf{x} \right\|_1,
+\]
+where in this context \( \mathbf{A} \) is the CT forward operator, \( \mathbf{y} \) is the observed noisy sinogram, \( \mathbf{x} \) is the true image to be reconstructed, and \( \lambda \) is the regularisation parameter. The particular choice of regularisation is known as the total variation (TV) regularisation, which promotes sparsity in the gradient of the image. 
+\subsubsection{Model-Driven Approach}
+Such a problem would typically be solved using proximal gradient descent however the proximal operator for the total variation regularisation is not straight forward to calculate. However, the proximal operator can be computed under a variable splitting scheme, so the problem is tackled using the alternating direction method of multipliers (ADMM) algorithm. Here a new quantity \( \mathbf{z} = \nabla \mathbf{x}\) is introduced and a penalty is added to the objective function to enforce the constraint \( \mathbf{z} = \nabla \mathbf{x} \). The ADMM algorithm is then used to solve the problem iteratively and can be summarised as follows:
+
+\begin{algorithm}[H]
+\caption{Alternating Direction Method of Multipliers (ADMM)}
+\begin{algorithmic}[1]
+\State \textbf{initialise:} $\mathbf{x}_0, \mathbf{z}_0, \mathbf{u}_0, \rho$
+\State \textbf{define:} $L_\rho(\mathbf{x}, \mathbf{z}, \mathbf{u}) = \left\| \mathbf{y} - \mathbf{A} \mathbf{x} \right\|_2^2 + \lambda \left\| \mathbf{z} \right\|_1 + \mathbf{u}^T (\nabla \mathbf{x}-\mathbf{z})+\frac{\rho}{2} \left\| \nabla \mathbf{x} - \mathbf{z}\right\|_2^2$  \Comment{Define the augmented Lagrangian}
+\While{not converged}
+    % Define lp
+    \State $\mathbf{x}_{k+1} \gets \min_x L_\rho(\mathbf{x}, \mathbf{z}_k, \mathbf{u}_k)$ \Comment{Update $x$ by minimizing the augmented Lagrangian}
+    \State $\mathbf{z}_{k+1} \gets \min_z L_\rho(\mathbf{x}_{k+1}, \mathbf{z}, \mathbf{u}_k)$ \Comment{Update $z$ via proximal operator of $\|\cdot\|_1$}
+    \State $\mathbf{u}_{k+1} \gets \mathbf{u}_k + \rho (\nabla \mathbf{x}_{k+1} - \mathbf{z}_{k+1})$ \Comment{Update the dual variable}
+    \State $k \gets k + 1$
+\EndWhile
+\State \textbf{return} $\mathbf{x}_k, \mathbf{z}_k, \mathbf{u}_k$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Data-Driven Approach}
+The solution for \( \mathbf{x} \) obtained using the ADMM algorithm is compared to the solution obtained using the data-driven approach of learned gradient descent. The learned gradient descent approach involves replacing the proximal operator at each iteration with a neural network that takes as input the arguments of the proximal operator and returns the output. The algorithm can be summarised as follows:
+
+
+\begin{algorithm}[H]
+    \caption{Learned Gradient Descent}
+    \begin{algorithmic}[1]
+    \State \textbf{initialize:} $\mathbf{x}_0$, $N$
+    \State \textbf{define:} $f(\mathbf{x}) = \left\| \mathbf{y} - \mathbf{A} \mathbf{x} \right\|_2^2$ \Comment{Define the data fidelity term}
+    \For{$k = 1$ to $N$}
+        \State $\mathbf{g}_k \gets \mathbf{A}^T(\mathbf{A}\mathbf{x}_k - \mathbf{y})$ \Comment{Gradient computation}
+        \State $\mathbf{dx} \gets h_k(\mathbf{x}_k, \mathbf{g}_k; \theta_k)$ \Comment{Apply learned proximal mapping}
+        \State $\mathbf{x}_{k+1} \gets \mathbf{x}_k + \tau_k \mathbf{dx}$ \Comment{Update the solution}
+    \EndFor
+    \State \textbf{return} $\mathbf{x}_N$
+    \end{algorithmic}
+    \end{algorithm}
+
+The initial estimate \( \mathbf{x}_0 \) is set to be the filtered back projection (FBP) reconstruction of the sinogram \( \mathbf{y} \). This provides a reasonable initial estimate for the image reconstruction problem.
+
+\subsubsection{Model Architecture}
+The architecture of the unrolling neural network \( h_* \) is a convolutional neural network that processes concatenated tensors of the current iterate $x$ and the gradient $u$. It comprises three convolutional layers, each with a kernel size of $3 \times 3$ and a stride of $1$. The first layer transforms 2 input channels to 32 output channels, followed by a Parametric Rectified Linear Unit (PReLU) activation. The second layer continues with 32 channels, also followed by PReLU. The final layer reduces the channel count from 32 to 1. The output of the network is delta $dx$, used to update the current estimate $x_i$ at each iteration of the learned gradient descent algorithm.
+
+\subsection{Training}
+The neural network is trained in a supervised manner using the Adam optimiser with a learning rate of $10^{-4}$, across 2000 epochs. The learned gradient descent algorithm is executed for 5 iterations, employing mean square error as the loss function, calculated between the final estimate $x_5$ and the true image $x^*$.
+
+\subsection{Results}
+The results of the model-driven and data-driven approaches are compared in Figure \ref{fig:reconstruction_comparison}. The data-driven approach is observed to produce a reconstruction with a higher level of detail, confirmed by the higher peak signal-to-noise ratio (PSNR), and structural similarity index (SSIM) compared to the model-driven approach and simple FBP reconstruction. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/q3_2_results.png}
+    \caption{Comparison of the FBP, model-driven, and data-driven reconstructions of the image.}
+    \label{fig:reconstruction_comparison}
+\end{figure}
 
 \bibliographystyle{plain}  % Choose the style that suits your needs
 \bibliography{references}  % The filename of the .bib file, without the extension
