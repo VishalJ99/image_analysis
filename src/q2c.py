@@ -14,7 +14,7 @@ def main(image_path, level, crop_list):
     img_gray = np.mean(img, axis=2)
     level = 2
 
-    img_gray = img_gray[crop_list[0]: crop_list[1], crop_list[2]: crop_list[3]]
+    img_gray = img_gray[crop_list[0] : crop_list[1], crop_list[2] : crop_list[3]]
 
     coeffs = pywt.wavedec2(img_gray, wavelet="db4", mode="per", level=level)
     coeff_array, coeff_slices = pywt.coeffs_to_array(coeffs)
@@ -35,8 +35,7 @@ def main(image_path, level, crop_list):
     )
 
     # Reconstruct the image using the thresholded coefficients.
-    coeffs = pywt.array_to_coeffs(coeff_array, coeff_slices,
-                                  output_format="wavedec2")
+    coeffs = pywt.array_to_coeffs(coeff_array, coeff_slices, output_format="wavedec2")
 
     reconstructed_img = pywt.waverec2(coeffs, wavelet="db4", mode="per")
 
@@ -45,8 +44,9 @@ def main(image_path, level, crop_list):
     plt.title("Reconstructed Image")
     plt.tight_layout()
     plt.savefig("outputs/q2c_reconstructed_image.png", dpi=300)
-    print("[INFO] Reconstructed image saved to "
-          "'outputs/q2c_reconstructed_image.png'")
+    print(
+        "[INFO] Reconstructed image saved to " "'outputs/q2c_reconstructed_image.png'"
+    )
 
     # Compute diff between original and reconstructed image.
     diff = img_gray - reconstructed_img
@@ -62,8 +62,7 @@ def main(image_path, level, crop_list):
     thresholds = [0.2, 0.1, 0.05, 0.025]
     for thresh in thresholds:
         coeff_array_dup = deepcopy(coeff_array)
-        coeff_threshold = np.percentile(np.abs(coeff_array),
-                                        100 * (1 - thresh))
+        coeff_threshold = np.percentile(np.abs(coeff_array), 100 * (1 - thresh))
 
         # Zeroing out smaller coefficients
         coeff_array_dup[np.abs(coeff_array) < coeff_threshold] = 0
@@ -74,8 +73,7 @@ def main(image_path, level, crop_list):
         )
 
         # Reconstruct image from thresholded coefficients.
-        img_reconstructed = pywt.waverec2(coeffs_thresh, "db4",
-                                          mode="periodization")
+        img_reconstructed = pywt.waverec2(coeffs_thresh, "db4", mode="periodization")
 
         # Compute difference and MSE
         difference = img_gray - img_reconstructed
@@ -112,8 +110,7 @@ if __name__ == "__main__":
         description="Wavelet Reconstruction of river image."
     )
     parser.add_argument("image_path", type=str, help="Input file")
-    parser.add_argument("--level", type=int,
-                        help="Level of wavelet decomposition")
+    parser.add_argument("--level", type=int, help="Level of wavelet decomposition")
     parser.add_argument(
         "--crop_list",
         nargs="+",

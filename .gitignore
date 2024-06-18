@@ -15,3 +15,15 @@ __pycache__/
 output/
 docs/
 CS*
+
+
+# Ignore everything in the report directory
+report/*
+
+# Whitelist specific files in the report directory
+!report/main.tex
+!report/main.pdf
+!report/figs/
+!report/figs.ipynb
+src/*.ipynb
+!coursework_LGD_filled_vj.ipynb

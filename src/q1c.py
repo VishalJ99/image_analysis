@@ -132,8 +132,7 @@ def main(image):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Coin segmentation algorithm.")
+    parser = argparse.ArgumentParser(description="Coin segmentation algorithm.")
     parser.add_argument("image_path", type=str, help="Input file")
     args = parser.parse_args()
 

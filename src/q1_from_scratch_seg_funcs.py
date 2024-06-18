@@ -2,6 +2,7 @@
 From scratch implementations of the segmentation algorithm for q1a
 Lung CT segmentation.
 """
+
 import numpy as np
 from collections import deque
 

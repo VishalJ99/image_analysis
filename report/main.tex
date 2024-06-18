@@ -36,54 +36,54 @@
 
 \begin{document}
 \section{Question 1 - Image Segmentation}
-This question details the segmentation algorithms used to segment the required sections of the lung ct image, the noisy flowers and the coin images.
+
 \subsection{Part A: Lung CT Image Segmentation}
-This section details the segmentation algorithm of the Lung CT image shown in Figure \ref{fig:lung_ct_image}. The region to be segmented is the lung area, including all the nodules and tissue within. The image is taken from the LIDC-IDRI dataset \cite{lidc_idri}.
+For the segmentation of lung CT image, shown in Figure \ref{fig:lung_ct}, the primary objective is to accurately delineate lung tissues, including nodules, from surrounding anatomical structures. The inherent high contrast between the lung fields and adjacent tissues suggests the utility of a threshold-based segmentation method.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\textwidth]{../data/CT.png}
-    \caption{Lung CT image from the LIDC-IDRI dataset.}
-    \label{fig:lung_ct_image}
+    \includegraphics[width=0.4\textwidth]{../data/CT.png}
+    \caption{Lung CT image.}
+    \label{fig:lung_ct}
 \end{figure}
 
-\subsubsection{Image Characteristics}
-The image shows a high contrast between the lungs and surrounding non lung tissue. This observation motivates a threshold based approach to segment the lung area. The nodules and tissue in the intra lung regions are of a much higher intensity than the lung tissue, as such it is appropriate supplement the thresholding step with additional morphological operations.
+\subsubsection{Segmentation Algorithm:}
 
-\subsubsection{Assumptions}
-The algorithm assumes that after binarising the image via thresholding, the background makes up the largest connected component, with the left and right lungs being the next two largest. The algorithm also assumes that the nodules and tissue within the lung regions are fully enclosed and do not touch the border of the lung regions.
-
-\subsubsection{Segmentation Algorithm}
 \begin{itemize}
-    \item \textbf{Binarise Image via Otsu Thresholding:} The image is thresholded using Otsu's threshold. This is a global thresholding method that maximises the inter-class variance of foreground and background. 
-    \item \textbf{Connected Component Analysis:} The binary image is inverted to make the lung and background regions the foreground. The connected components of the inverted image are labelled using 8-connectivity. The second and third largest connected components are selected to recover the left and right lung regions. The connected components are selected based on their area. 
-    \item \textbf{Binary Hole Filling} To recover the nodules and tissue within the lung regions, binary hole filling is performed. The algorithm fills holes in a binary image by inverting the image, labelling connected regions, and converting regions not connected to the border from background to foreground.
-    \end{itemize}
-    \begin{figure}[H]
+    \item \textbf{Otsu Thresholding:} The image is binarised via Otsu's threshold, which finds the threshold that maximises the inter-class variance.
+    \item \textbf{Connected Component Analysis:} Connected component analysis with 8-connectivity is used to select the left and right lungs.
+    \item \textbf{Binary Hole Filling:} To recover the nodules and tissue within the lung regions, binary hole filling is performed.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{.3\textwidth}
         \centering
-        \begin{subfigure}{.3\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{figs/q1a_binary.png}  % Replace with your image file
-            \caption{}
-            \label{fig:otsu_threshold}
-        \end{subfigure}%
-        \begin{subfigure}{.3\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{figs/q1a_largest_connected_components.png}  % Replace with your image file
-            \caption{}
-            \label{fig:connected_components}
-        \end{subfigure}%
-        \begin{subfigure}{.3\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{figs/q1a_filled_holes.png}  % Replace with your image file
-            \caption{}
-            \label{fig:filled_holes}
-        \end{subfigure}
-        \label{fig:segmentation_steps}
-    \caption{Key steps in the segmentation of the lung CT image: (a) Binarisation using Otsu's threshold, (b) Mask inversion and selection of lung regions via connected component analysis, (c) Recovery of internal structures through binary hole filling.}
-    \end{figure}
+        \includegraphics[width=\linewidth]{figs/q1a_binary.png}  % Replace with your image file
+        \caption{}
+        \label{fig:otsu_threshold}
+    \end{subfigure}%
+    \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1a_largest_connected_components.png}  % Replace with your image file
+        \caption{}
+        \label{fig:connected_components}
+    \end{subfigure}%
+    \begin{subfigure}{.3\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/q1a_filled_holes.png}  % Replace with your image file
+        \caption{}
+        \label{fig:filled_holes}
+    \end{subfigure}
+    \label{fig:segmentation_steps}
+\caption{Segmentation Algorithm: (a) Binarisation using Otsu's threshold, (b) Connected component analysis, (c) Binary hole filling.}
+\end{figure}
+
 Note, this segmentation algorithm was also implemented from scratch. Relevant code can be found in \texttt{src/q1a\_from\_scratch.py} and \texttt{src/from\_scratch\_seg\_funcs.py}.
+
+This algorithm is implemented from scratch in \texttt{src/q1a\_from\_scratch.py}.
 \subsubsection{Results}
-The final segmentation of the lung CT image is shown in Figure \ref{fig:lung_ct_image} The segmentation clearly captures the relevant lung regions and all the nodules and tissues within.
+The final segmentation of the lung CT image is shown in Figure \ref{fig:lung_ct_segmentation} The segmentation clearly captures the relevant lung regions and all the nodules and tissues within.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.4\textwidth]{figs/q1a.png}
@@ -92,7 +92,7 @@ The final segmentation of the lung CT image is shown in Figure \ref{fig:lung_ct_
 \end{figure}
 
 \subsubsection{Discussion}
-Figure \ref{fig:q1a_ambiguity} shows a potential ambiguous region in the segmentation. This region was segmented due to having a similar intensity as the lung tissue and being connected to lung tissue post Otsu thresholding. However, as this region could not be clearly identified as non lung tissue without additional context, it was kept in the final segmentation. This also highlights the limitations of thresholding based segmentation methods in identifying regions that are not clearly defined by intensity.
+Figure \ref{fig:q1a_ambiguity} shows a potential ambiguous region in the segmentation. This region was segmented due to having a similar intensity as the lung tissue and being connected to lung tissue post Otsu thresholding. However, as this region could not be clearly identified as non lung tissue without additional context, it was kept in the final segmentation.
 \begin{figure}[H]
     \centering
     \begin{subfigure}{.4\textwidth}
@@ -121,8 +121,7 @@ This section details the segmentation algorithm of the noisy flowers image shown
     \label{fig:flowers_image}
 \end{figure}
 
-\subsubsection{Image Characteristics}
-The image features a type of noise that is typical to gaussian degradations. This was confirmed by applying a gaussian filter to each of the colour channels seperately in the image and observing that nearby pixel colours were more. This effect is shown in Figure \ref{fig:gaussian_noise_evidence}. 
+The noise in the image  was classified to be gaussian noise due to the success of applying gaussian filters seperately on each colour channel, shown in Figure \ref{fig:gaussian_noise_evidence}.
 \begin{figure}[H]
     \centering
     \begin{subfigure}{.4\textwidth}
@@ -140,19 +139,17 @@ The image features a type of noise that is typical to gaussian degradations. Thi
     \caption{Effect of Gaussian filtering on the colour channels of the noisy flowers image: (a) Cropped region of the noisy flowers image, (b) Cropped region after applying a Gaussian filter with standard deviation 1.}
     \label{fig:gaussian_noise_evidence}
 \end{figure}
-The purple flowers in \ref{fig:flowers_image}, except for the ones clearly in the foreground, are all roughly of the same shade of purple. There are two batches of purple flowers in the image, one large group down the middle and another smaller group along the upper left corner of the image. The purple flowers in the foreground have shadows on them making the bottom half of the flower darker than the top half. Due to the general uniformity in colours of the flower after denoising, a clustering type algorithm is appropriate for this image.
 
-\subsubsection{Assumptions}
-The main assumption made by this algorithm is in choosing the number of clusters. The number of clusters is chosen to be 5, which is chosen based on the number of distinct colours in the image. The green grass and stems, the orange flower heads, the purple flower heads, the white flower heads and the red flower heads.
+\subsubsection{Segmentation Algorithm:}
 
-\subsubsection{Segmentation Algorithm}
 \begin{itemize}
-    \item \textbf{Bilateral Gaussian Filtering:} First the image was denoised using a bilateral filter \cite{710815}. This filter was chosen for its ability to denoise while considering both spatial proximity and colour similarity, ideal for preserving flower head edges. A spatial standard deviation of 15 was chosen to allow for smoothing across the entire flower head regions, while a colour standard deviation of 1 ensures edge sharpness by only blending similarly coloured pixels. This approach effectively reduces noise without blurring distinct colour boundaries.
-    \item \textbf{Conversion from RGB to LAB colour Space:} The image is converted from RGB to LAB colour space, which better approximates human vision by separating colour and luminance. This space enhances clustering accuracy because Euclidean distances more closely reflect perceptual differences, making it ideal for grouping similar colours like purple flower heads.
-    \item \textbf{K-Means Clustering:} K-means clustering is applied to the LAB image. The number of clusters is chosen to be 5, based on the number of distinct colours in the image. The image is then segmented by assigning each pixel to the cluster with the closest centroid.
-    \item \textbf{Select Purple Pixels} The cluster centre closest to the the LAB value of purple is chosen to be the desired cluster to represent the foreground. The image is binarised by setting all pixels not in this cluster to 0 and all pixels in this cluster to 1.
-    \item \textbf{Denoise Segmentation via Morphological Opening} To remove small-scale noise from the mask while retaining the shape and size of the main flower heads, a morphological opening operation is applied. 
-    \item \textbf{Remove Small Connected Components:} Finally to remove any left over noise, all connected components with an area less than 100 pixels are removed. The previous morphological opening step ensures the required thresholding does not remove any of the main flower heads.
+    \item \textbf{Bilateral Gaussian Filtering:} Initial denoising is achieved using a bilateral filter, chosen for its ability to reduce noise while preserving edges by considering both color similarity and spatial proximity. This step maintains the integrity of flower boundaries against the noise.
+    
+    \item \textbf{Conversion to LAB Color Space:} The image is converted from RGB to LAB color space. Euclidean distances in LAB more closely resemble perceptual differences and thus makes the clustering more effective.
+    
+    \item \textbf{K-Means Clustering:} K means is applied with five clusters to match the number of distinct color groups observed.
+    
+    \item \textbf{Post-Clustering Processing:} Additional steps include selecting the cluster closest to purple's LAB value and refining the segmentation mask through morphological operations and removing small connected components.
 \end{itemize}
 \begin{figure}[H]
     \centering
@@ -180,7 +177,7 @@ The main assumption made by this algorithm is in choosing the number of clusters
         \caption{}
         \label{fig:cnc_threshold_flowers}
     \end{subfigure}%
-    \caption{Segmentation process for the noisy flowers image: (a) Image after denoising with a bilateral filtering, showing reduced colour noise while preserving edge details. (b) Result of applying K-means clustering to segment purple pixels. (c) Segmentation mask post morphological opening, illustrating reduced noise in the segmentation. (d) Final segmentation after removing small connected components, highlighting the refined segmentation of flower regions.}
+    \caption{Segmentation algorithm: (a) Bilateral filtering (b) K-means clustering to segment purple pixels. (c) Segmentation mask post morphological opening (d) Final segmentation after removing small connected components}
     \label{fig:q1b_segmentation_steps}
 \end{figure}
 
@@ -217,13 +214,12 @@ The final segmentation of the noisy flowers image is shown in Figure \ref{fig:q1
             \label{fig:q1b_zoomed_bad2}
         \end{subfigure}
     \end{minipage}
-    \caption{Zoomed in view of the segmentation: (a) Segmentation with bounding boxs around regions of interest where the segmentation has performed well, (b) Zoomed in view of the segmentation showing the exclusion of orange flower from the purple group, (c) Zoomed in view of the segmentation showing the exclusion of orange and red flowers that are occluded by flowers from the purple group.}
+    \caption{Zoomed in view of the segmentation: (a) Segmentation with bounding boxes around regions of interest, (b) Correct exclusion of orange flower from the purple group, (c) Correct exclusion of orange and red flowers that are occluded by flowers from the purple group.}
     \label{fig:flowers_seg_zoomed}
 \end{figure}
 
 \subsubsection{Discussion}
-The main challenge in this segmentation is the segmentation of the purple flower heads that are in the foreground (closest to the camera). These flower heads have shadows on them, making the bottom half of the flower darker than the top half, making them difficult to fully segment with the current approach. An example such case is shown in figure \ref{fig:q1b_seg_lim}. This highlights the limitations of a segmentation algorithm which segments purely on colour. A potential improvement to this algorithm would be to consider spatial shape based information to better segment these flower heads or make use of more sophisticated pre-processing to remove the shadows.
-% TODO: Make it clearer where the seg is failing, right now the masks are not showing in the zoomed regions so not obvious
+The primary challenge in segmenting the foreground purple flower heads arises from shadows that darken the lower half, complicating color-based segmentation. This issue is illustrated in Figure \ref{fig:q1b_seg_lim}.
 \begin{figure}[H]
     \centering
     \begin{subfigure}{.8\textwidth}
@@ -238,43 +234,32 @@ The main challenge in this segmentation is the segmentation of the purple flower
         \caption{}  % Optional: add a specific caption here if needed.
         \label{fig:q1b_bad_zoom}
     \end{subfigure}
-    \caption{Limitations in segmentation of noisy flowers image: (a) Full view of the image with poorly segmented areas highlighted in a bounding box, demonstrating where the algorithm fails to accurately segment due to shadows. (b) Close-up view of a poorly segmented area, showing flower heads which feature strong shadows, impacting segmentation accuracy.}
+    \caption{Limitations in segmentation: (a) Full view of the image with poorly segmented areas highlighted in a bounding box (b) Flowers with strong shadows}
     \label{fig:q1b_seg_lim}
 \end{figure}
 
 \subsection{Part C: Coin Image Segmentation}
-This section details the segmentation algorithm of the coin image shown in Figure \ref{fig:coins_image}. The region to be segmented are the first coin in the first row, the second coin in the second row, the third coin in the third row and the fourth coin in the fourth row.
-\begin{figure}[H]
+This section details the segmentation algorithm of the coin image shown in Figure \ref{fig:coins_image}. The region to be segmented are the first coin in the first row, the second coin in the second row, the third coin in the third row and the fourth coin in the fourth row. The image has been degraded with vertical line type artefacts, however can be corrected by filtering. There is generally good contrast between the coins and the background suggesting that edge detection can be used to segment the coins.
+\begin{figure}[H] 
     \centering
     \includegraphics[width=0.5\textwidth]{../data/coins.png}
     \caption{Coin image.}
     \label{fig:coins_image}
 \end{figure}
 
-\subsubsection{Image Characteristics}
-The image has been degraded with vertical line type artefacts. These artefacts have likely been synthetically generated and can be corrected by filtering. There is generally good contrast between the coins and the background, however fig \ref{fig:otsu_threshold_coins}, applying an otsu threshold reveals that the coins in the first row are not clearly separated from the background. Edge detection to segment the coins is likely to perform better in this case.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.5\textwidth]{figs/q1c_otsu_thresholded.png}  % Replace with your image file
-    \caption{Effect of Otsu thresholding on the coin image.}
-    \label{fig:otsu_threshold_coins}
-\end{figure}
 
-\subsubsection{Assumptions}
-To select the required coins for the task, the algorithm assumes that the coins are arranged in 4 rows with 6 columns, without making prior assumptions on what coin belongs to which position in the grid. The algorithm also assumes that the coins are not touching each other. Lastly, it assumes that the background is the largest connected component in the image.
 \subsubsection{Segmentation Algorithm}
-
 \begin{itemize}
-\item \textbf{Row-wise Median Filtering:} Initially, a row-wise median filter is applied to the image to remove vertical line artefacts. This step is crucial to recover high quality edges for subsequent edge detection.
-\item \textbf{Edge Detection with Canny:} Canny edge detection is a multi-stage algorithm that uses Gaussian smoothing to reduce noise, then detects edges by identifying areas with high gradient magnitudes. It employs a double threshold to classify edges into strong, weak, and non-edges: strong edges exceed the high threshold and are confirmed as true edges; weak edges between the two thresholds are only confirmed if connected to strong edges; and areas below the low threshold are dismissed as non-edges. This method ensures robust edge continuity and noise suppression.
-\item \textbf{Dilation of Edges:} After detecting edges, a dilation operation is performed using an elliptical structuring element. This step helps to close small gaps in the detected edges, which aids in forming continuous outlines for the coins.
-\item \textbf{Removal of the Largest Component:} The resulting image is then inverted and connected components are labelled. The largest connected component is assumed to be the background and is removed.
-\item \textbf{Integration of Edges and Mask:} Edges detected from the Canny step are added to the mask of coins to enhance the definitions of the coins' borders and 'close' the coins so that the mask is more faithful to the actual coin shapes.
+\item \textbf{Row-wise Median Filtering:} A row-wise median filter is applied to the image to remove vertical line artefacts.
+\item \textbf{Edge Detection with Canny:} Canny edge detection is used to get a binary edge mask. Canny edge detection is a multi-stage algorithm that uses Gaussian smoothing to reduce noise, then detects edges by identifying areas with high gradient magnitudes. It employs a double threshold to classify edges into strong, weak, and non-edges: strong edges exceed the high threshold and are confirmed as true edges; weak edges between the two thresholds are only confirmed if connected to strong edges; and areas below the low threshold are dismissed as non-edges.
+\item \textbf{Dilation of Edges:} Next, a dilation operation is performed to close small gaps in the edge outlines of the coins.
+\item \textbf{Removal of the Largest Component:} The resulting image is then labelled using 4-connectivity. The largest connected component is assumed to be the background and is removed.
+\item \textbf{Integration of Edges and Mask:} Edges detected from the Canny step are added back to enhance the definitions of the coins' borders.
 \item \textbf{Binary Hole Filling:} A binary hole filling operation is then performed to fill any unsegmented areas within each coin. 
-\item \textbf{Median Filtering on Mask:} Finally, to remove spurious regions of the mask which arose from edges that did not belong to any coins, both row-wise and column-wise median filtering is applied to the mask. This step removes regions that are not part of the coins. This step ensures that the next step of removing small components need not require too large a threshold, risking the removal of actual coins.
-\item \textbf{Removal of Small Connected Components:} Finally, any small connected components with an area less than 100 pixels are removed from the mask. This step ensures that only the coins are retained in the final mask.
-\item \textbf{Sorting and Assigning Grid Positions:} The centroids of the coin masks are then sorted based on their vertical and horizontal coordinates to assign each coin a grid position. 
+\item \textbf{Median Filtering on Mask:} Finally, to remove spurious regions of the mask which arose from edges that did not belong to any coins, both row-wise and column-wise median filtering is applied to the mask. This step ensures that the next step of removing small components need not require too large a threshold, risking the removal of actual coins.
+\item \textbf{Removal of Small Connected Components:} Finally, any small connected components with an area less than 100 pixels are removed from the mask.
+\item \textbf{Sorting and Assigning Grid Positions:} The centroids of the coin masks are then sorted and used to assign each coin a grid position. 
 \item \textbf{Selecting Specific Coins:} The coins whose grid position matches the required positions are selected.
 
 \end{itemize}
@@ -340,7 +325,7 @@ To select the required coins for the task, the algorithm assumes that the coins 
         \caption{}
     \end{subfigure}%
     
-    \caption{Detailed steps of the coin segmentation process including: (a) Initial median filtering to remove line artefacts, (b) Canny edge detection to outline the coins, (c) Dilated edges to enhance edge continuity, (d) Identification of connected components to identify background, (e) Mask after background removal, (f) Mask integrated with edges to refine the coin outlines, (g) Binary hole filling to complete the interior of the coins, (h) Median filtered mask to remove spurious edges, (i) Final segmentation after eliminating small connected components to isolate individual coins, (j) Identified coins with their grid positions, (k) Selected coins based on specified positions.}
+    \caption{Segmentation Algorithm: (a) Initial row wise median filtering (b) Canny edge detection (c) Dilated edges (d) Identification of connected components (e) Binary Mask after background removal (f) Mask integrated with edges, (g) Binary hole filling, (h) Post row-wise and column-wise median filtered mask (i) Final segmentation after eliminating small connected components, (j) Identified coins with their grid positions, (k) Final Selected coins.}
     \label{fig:coin_segmentation_steps}
 \end{figure}
 
@@ -355,8 +340,7 @@ The final segmentation of the coin image is shown in Figure \ref{fig:q1c_selecte
 \end{figure}
 
 \subsubsection{Discussion}
-The chosen method works almost perfectly, the only issue is that the median filtering and edge dilation steps can result in the final mask being slightly unfaithful to the actual coin shapes around the edge. However, with more experimentation the current approach could be improved to better capture the coin shapes.
-
+The chosen method works almost perfectly, the only issue is that the median filtering and edge dilation steps can result in the final mask being slightly unfaithful to the actual coin shapes around the edge.
 \section{Question 2 - Inverse Problems and Multi-resolution analysis}
 \subsection{Part A - Solving Over Determined Inverse Problems: Line Fitting}
 In this scenario, the goal is to fit a line described by the equation \( y = ax + c \) to a dataset consisting of noisy measurements. This is a typical example of a linear inverse problem where we aim to determine the parameters of a line, which in mathematical terms can be framed as:
