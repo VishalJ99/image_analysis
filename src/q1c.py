@@ -5,14 +5,13 @@ from skimage.measure import label, regionprops
 from skimage.filters import median
 import argparse
 
+# import binary fill holes from skimage
+from scipy.ndimage import binary_fill_holes
+
 
 def segment_coins(image):
     # Make a copy to avoid modifying the original image.
     img = image.copy()
-    plt.imshow(img, cmap="gray")
-    plt.title("0) Original Image")
-    plt.axis("off")
-    plt.show()
 
     # Median filter the intensity row wise to remove line artifacts.
     img_copy = img.copy()
@@ -20,37 +19,18 @@ def segment_coins(image):
         row_filtered = median(img_copy[idx, :], np.ones(10))
         img[idx, :] = row_filtered
 
-    plt.imshow(img, cmap="gray")
-    plt.title("1) Row Wise Median Filtered Image")
-    plt.axis("off")
-    plt.show()
-
     # Use Canny edge detector on the filtered image.
     edges = cv2.Canny(img, 100, 200)
 
-    plt.imshow(edges, cmap="gray")
-    plt.title("2) Canny Edge Detection")
-    plt.axis("off")
-    plt.show()
+    # Invert the edges.
+    inverted_edges = ~edges
 
-    inverted_edges = ~edges  # Inverting the edges
-
-    # Slight dilation to connect the edges.
+    # Slight dilation to connect the edge outlines.
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     inverted_edges = ~cv2.dilate(edges.astype(np.uint8), kernel, iterations=1)
 
-    plt.imshow(inverted_edges, cmap="gray")
-    plt.title("2b) Dilated Inverted Canny Edges")
-    plt.axis("off")
-    plt.show()
-
     # Label the connected components.
     labels = label(inverted_edges, connectivity=1)
-
-    plt.imshow(labels, cmap="nipy_spectral")
-    plt.title("Connected Components")
-    plt.axis("off")
-    plt.show()
 
     # Remove the largest connected component (background).
     regions = regionprops(labels)
@@ -61,30 +41,18 @@ def segment_coins(image):
     # Binarise the labels to get the mask.
     mask = np.zeros_like(labels)
     mask[labels > 0] = 1
-    plt.imshow(mask, cmap="gray")
-    plt.title("Mask after removing the largest component")
-    plt.axis("off")
-    plt.show()
 
     # Normalised Edges.
     edges = (edges / edges.max()).astype(np.int64)
 
     # Add edges to mask.
     mask += edges
+
+    # Binarise the mask.
     mask[mask > 1] = 1
-    plt.imshow(mask, cmap="gray")
-    plt.title("Mask + Edges")
-    plt.axis("off")
-    plt.show()
 
-    # Do a morphological closing to connect the coins.
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_CLOSE, kernel)
-
-    plt.imshow(mask, cmap="gray")
-    plt.title("Morphological Closing")
-    plt.axis("off")
-    plt.show()
+    # Apply binary hole filling to the mask.
+    mask = binary_fill_holes(mask)
 
     # Apply row wise median filter to the mask.
     mask_copy = mask.copy()
@@ -97,10 +65,6 @@ def segment_coins(image):
     for idx in range(1, image.shape[1]):
         col_filtered = median(mask_copy[:, idx], np.ones(10))
         mask[:, idx] = col_filtered
-    plt.imshow(mask, cmap="gray")
-    plt.title("Median Filtered Mask")
-    plt.axis("off")
-    plt.show()
 
     # Get rid of all small connected components.
     labels = label(mask)
@@ -108,10 +72,7 @@ def segment_coins(image):
     for region in regions:
         if region.area < 100:
             labels[labels == region.label] = 0
-    plt.imshow(labels, cmap="nipy_spectral")
-    plt.title("Mask after removing small connected components")
-    plt.axis("off")
-    plt.show()
+
     return labels
 
 
@@ -123,76 +84,31 @@ def select_coin_segs(labels):
     centroids_i = np.array([region.centroid[0] for region in props])
     centroids_j = np.array([region.centroid[1] for region in props])
 
-    # Find centroid bins that have 6 elements in the x direction and 4
-    # elements in the y direction.
-    i_bins = [0]
-    j_bins = [0]
+    # Sort the centroids based on their i and j coordinates.
+    sorted_centroids_i_idx = np.argsort(centroids_i)
+    sorted_centroids_j_idx = np.argsort(centroids_j)
 
-    for i in range(0, labels.shape[0], 10):
-        l_bin = i_bins[-1]
-        r_bin = i
+    # Assign the a row and column number to each coin.
+    for idx in range(len(sorted_centroids_i_idx)):
+        # Fetch region corresponding to centroid with i coordinate.
+        region_i = props[sorted_centroids_i_idx[idx]]
 
-        # Count number of elements in the current bin.
-        count = centroids_i[(centroids_i >= l_bin)
-                            & (centroids_i < r_bin)].shape[0]
+        # Assign it an i attribute based on its index.
+        region_i.i = idx // 6
 
-        if count == 6:
-            i_bins.append(r_bin)
+        # Update the region in the props list.
+        props[sorted_centroids_i_idx[idx]] = region_i
 
-    for j in range(0, labels.shape[1], 10):
-        l_bin = j_bins[-1]
-        r_bin = j
-
-        # Count number of elements in the current bin.
-        count = centroids_j[(centroids_j >= l_bin)
-                            & (centroids_j < r_bin)].shape[0]
-
-        if count == 4:
-            j_bins.append(j)
-
-    # Visualise centroid coordinates and the identified bins.
-    fig, ax = plt.subplots(ncols=2, figsize=(12, 6))
-    fig.suptitle("Centroid Coordinates and Identified Bins")
-    ax[0].scatter(list(range(len(centroids_i))), centroids_i)
-    ax[0].set_title("Centroid i Coordinate scatter")
-    for bin_ in i_bins:
-        ax[0].axhline(bin_, color="red")
-
-    ax[1].scatter(list(range(len(centroids_j))), centroids_j)
-    ax[1].set_title("Centroid j Coordinate scatter")
-    for bin_ in j_bins:
-        ax[1].axhline(bin_, color="red")
-
-    plt.tight_layout()
-    plt.show()
-
-    # Visualise the coins and their identied bin based coordinates.
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.imshow(labels, cmap="nipy_spectral")
-    ax.set_title("Identified Coins and their i,j coordinates")
-    ax.axis("off")
-
-    for region in props:
-        i, j = np.digitize(region.centroid[0], i_bins), np.digitize(
-            region.centroid[1], j_bins
-        )
-        ax.text(region.centroid[1], region.centroid[0], f"{i},{j}", color="k")
-
-    plt.show()
+        # Repeat the same for the j coordinate.
+        region_j = props[sorted_centroids_j_idx[idx]]
+        region_j.j = idx // 4
+        props[sorted_centroids_j_idx[idx]] = region_j
 
     # Only show the coins where i = j.
     for region in props:
-        i, j = np.digitize(region.centroid[0], i_bins), np.digitize(
-            region.centroid[1], j_bins
-        )
+        i, j = region.i, region.j
         if i != j:
             labels[labels == region.label] = 0
-
-    # Visualise the result after removing coins that do not meet the criteria
-    plt.imshow(labels, cmap="nipy_spectral")
-    plt.title("8) Select Coins with i = j")
-    plt.axis("off")
-    plt.show()
 
     return labels
 
@@ -203,15 +119,16 @@ def main(image):
 
     # Visualise the final mask.
     plt.imshow(image, cmap="gray")
-    
+
     final_mask = final_mask.astype(float)
     final_mask[final_mask == 0] = np.nan  # Only show the segmented regions.
     plt.imshow(final_mask, alpha=0.5)
-
-    plt.title("Final Coin Segmentation")
+    plt.title("Coin Segmentation")
     plt.axis("off")
-    plt.savefig("output_segs/q1c.png", dpi=300)
-    plt.show()
+    plt.savefig("outputs/q1c_segmentation.png", dpi=300, bbox_inches="tight")
+    plt.tight_layout()
+
+    print("[INFO] Plot saved at 'outputs/q1c_segmentation.png'")
 
 
 if __name__ == "__main__":

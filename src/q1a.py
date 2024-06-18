@@ -8,21 +8,8 @@ import argparse
 
 
 def main(image):
-    # Visualise original image.
-    plt.imshow(image, cmap="gray")
-    plt.title("Original image")
-    plt.show()
-
     # Apply an Otus threshold.
-    _, binary = cv2.threshold(image, 0, 255,
-                              cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-    plt.imshow(binary, cmap="gray")
-    plt.axis("off")
-    plt.title("Binary image")
-    plt.tight_layout()
-
-    plt.show()
+    _, binary = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # Keep 2nd and 3rd largest connected components.
     label_image, _ = label(~binary)
@@ -33,30 +20,23 @@ def main(image):
     # Avoid largest connected component (background).
     binary[label_image == regions[1].label] = 1
     binary[label_image == regions[2].label] = 1
-    plt.imshow(binary, cmap="gray")
-    plt.axis("off")
-    plt.title("Binary image with 2 largest connected components "
-              "(excluding background)")
-    plt.tight_layout()
-    plt.show()
 
     # Fill holes.
     binary = binary_fill_holes(binary)
-    plt.imshow(binary, cmap="gray")
-    plt.axis("off")
-    plt.title("Binary image with filled holes")
-    plt.tight_layout()
-    plt.show()
 
     # Visualise the final segmentation over the original image.
     plt.imshow(image, cmap="gray")
+
+    # Only show the segmented regions.
     binary = binary.astype(float)
-    binary[binary == 0] = np.nan  # Only show the segmented regions.
+    binary[binary == 0] = np.nan
     plt.imshow(binary, alpha=0.5, cmap="jet")
-    plt.tight_layout()
     plt.axis("off")
-    plt.title("Final Lung CT Segmentation")
-    plt.show()
+    plt.title("Lung CT Segmentation")
+    plt.savefig("outputs/q1a_segmentation.png")
+    plt.tight_layout()
+
+    print("[INFO] Plot saved at 'outputs/q1a_segmentation.png'")
 
 
 if __name__ == "__main__":

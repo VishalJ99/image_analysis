@@ -22,26 +22,10 @@ def create_rgb_mask(binary_mask):
 
 
 def main(image):
-    # Visualise original image.
-    plt.imshow(image)
-    plt.title("RGB Image")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.savefig("report/figs/q1b_original.png", dpi=300, bbox_inches="tight")
-    plt.show()
-
     # Denoise image using bilateral filter.
     denoised_image = restoration.denoise_bilateral(
-        image, win_size=5, sigma_color=1, sigma_spatial=15,
-        channel_axis=-1
+        image, win_size=5, sigma_color=1, sigma_spatial=15, channel_axis=-1
     )
-
-    plt.imshow(denoised_image)
-    # plt.title("Denoised Image")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.savefig("report/figs/q1b_denoised.png", dpi=300, bbox_inches="tight")
-    plt.show()
 
     # Use LAB colour space for clustering.
     image_lab = color.rgb2lab(denoised_image)
@@ -70,25 +54,10 @@ def main(image):
 
     # Get the mask for the purple cluster.
     mask = cluster_image == closest_cluster_index
-    # Visualise the mask
-    plt.imshow(mask, cmap="gray")
-    # plt.title("K Means Purple Cluster Mask")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.savefig("report/figs/q1b_kmeans_mask.png", dpi=300, bbox_inches="tight")
-    plt.show()
 
     # Perform opening with a ball of radius 2 to disconnect small regions.
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_OPEN, kernel)
-
-    # Visualise the mask
-    plt.imshow(mask, cmap="gray")
-    # plt.title("K Means Purple Cluster Mask")
-    plt.axis("off")
-    plt.tight_layout()
-    plt.savefig("report/figs/q1b_kmeans_mask_post_opening.png", dpi=300, bbox_inches="tight")
-    plt.show()
 
     # Keep only connected components with area greater than 100 pixels.
     label_image, _ = label(mask)
@@ -97,13 +66,6 @@ def main(image):
     for region in regions:
         if region.area > 100:
             mask[label_image == region.label] = 1
-
-    plt.imshow(mask, cmap="gray")
-    # plt.title("Post Removing Small Connected Component Mask")
-    plt.axis("off")
-    plt.tight_layout()
-    # plt.savefig("report/figs/q1b_mask_post_cnc_removal.png", dpi=300, bbox_inches="tight")
-    plt.show()
 
     # Visualise the mask over the original image.
     rgb_mask = create_rgb_mask(mask)
@@ -114,11 +76,12 @@ def main(image):
     rgb_mask /= 255.0
 
     plt.imshow(image)
-    plt.imshow(rgb_mask, cmap="jet", alpha=0.5)  # Use a colormap with good contrast.
-    # plt.title("Mask Overlay")
+    plt.imshow(rgb_mask, cmap="jet", alpha=0.5)
+    plt.title("Noisy Flowers Segmentation")
     plt.axis("off")
-    # plt.savefig("report/figs/q1b_final_mask.png", dpi=300, bbox_inches="tight")
-    plt.show()
+    plt.tight_layout()
+    plt.savefig("outputs/q1b_segmentation.png", dpi=300, bbox_inches="tight")
+    print("[INFO] Plot saved at 'outputs/q1b_segmentation.png'")
 
 
 if __name__ == "__main__":
