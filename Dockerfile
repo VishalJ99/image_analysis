@@ -7,7 +7,8 @@ WORKDIR /image_analysis
 
 RUN conda env update --file environment.yml
 
-RUN echo "conda activate image_analysis" >> ~/.bashrc
+RUN echo "conda activate ia_vj279" >> ~/.bashrc
 SHELL ["/bin/bash", "--login", "-c"]
 
-RUN pre-commit install
+# Needed for opencv.
+RUN apt-get update && apt-get install -y libgl1-mesa-glx

@@ -1,6 +1,18 @@
 name: ia_vj279
 channels:
+  - astra-toolbox
+  - nvidia
   - defaults
 dependencies:
   - python=3.11
   - ipykernel
+  - matplotlib
+  - scipy
+  - scikit-learn
+  - pip
+  - pip:
+    - torch
+    - PyWavelets
+    - scikit-image
+    - opencv-python
+
