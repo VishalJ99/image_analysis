@@ -48,7 +48,7 @@ docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate 
 
 Q2b - Compressed Sensing Reconstruction
 ```
-
+docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q2b.py"
 ```
 
 Q2c - Sparse Wavelet Reconstruction
