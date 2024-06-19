@@ -20,7 +20,9 @@ def main(N, samples, k, lambda_, n_itrs, seed):
     # Visualise the original signal.
     plt.stem(t)
     plt.title("Original Sparse Signal (Time Domain)")
-    plt.show()
+    plt.savefig("outputs/q2b_original_signal.png", dpi=300)
+    plt.clf()
+    print("[INFO] Original signal saved at 'outputs/q2b_original_signal.png'")
 
     # Compute the frequency spectra of the signal.
     f = fftc(t)
@@ -46,12 +48,21 @@ def main(N, samples, k, lambda_, n_itrs, seed):
     ax[0].set_title("Original Frequency Spectrum")
     ax[1].set_title("Uniformly Sampled Frequency Spectrum")
     ax[2].set_title("Randomly Sampled Frequency Spectrum")
+    plt.suptitle("Frequency Spectra")
     plt.tight_layout()
-    plt.show()
+    plt.savefig("outputs/q2b_sampled_frequency_spectra.png", dpi=300)
+    plt.clf()
+    print("[INFO] Frequency spectra saved at 'outputs/q2b_sampled_frequency_spectra.png'")
 
     # Reconstruct the sparse signal using the sampled frequency spectra.
-    uniform_reconstructed_t, uniform_errs = POCS(uniform_sampled_f, lambda_, n_itrs, f)
-    random_reconstructed_t, random_errs = POCS(random_sampled_f, lambda_, n_itrs, f)
+    uniform_reconstructed_t, uniform_errs = POCS(uniform_sampled_f,
+                                                 lambda_,
+                                                 n_itrs,
+                                                 f)
+    random_reconstructed_t, random_errs = POCS(random_sampled_f,
+                                               lambda_,
+                                               n_itrs,
+                                               f)
 
     # Plot the error vs iteration.
     fig, ax = plt.subplots()
@@ -61,7 +72,9 @@ def main(N, samples, k, lambda_, n_itrs, seed):
     ax.set_ylabel("Error")
     ax.set_title("POCS Error vs Iteration")
     ax.legend()
-    plt.show()
+    plt.savefig("outputs/q2b_error_vs_iteration.png", dpi=300)
+    plt.clf()
+    print("[INFO] Error vs Iteration saved at 'outputs/q2b_error_vs_iteration.png'")
 
     # Compare the original, sampled and reconstructed in the time domain.
     fig, ax = plt.subplots(3, 1, figsize=(6, 8))
@@ -70,11 +83,13 @@ def main(N, samples, k, lambda_, n_itrs, seed):
     ax[2].stem(np.real(uniform_reconstructed_t))
 
     ax[0].set_title("Original")
-    ax[1].set_title("Sampled")
-    ax[2].set_title("Reconstructed")
+    ax[1].set_title("Partial (IFFT of Sampled)")
+    ax[2].set_title("Final (IFFT of Reconstructed)")
     fig.suptitle("Uniform Sampling (Time Signals)")
     plt.tight_layout()
-    plt.show()
+    plt.savefig("outputs/q2b_uniform_sampling.png", dpi=300)
+    plt.clf()
+    print("[INFO] Uniform sampling saved at 'outputs/q2b_uniform_sampling.png'")
 
     fig, ax = plt.subplots(3, 1, figsize=(6, 8))
     ax[0].stem(t)
@@ -82,17 +97,20 @@ def main(N, samples, k, lambda_, n_itrs, seed):
     ax[2].stem(np.real(random_reconstructed_t))
 
     ax[0].set_title("Original")
-    ax[1].set_title("Sampled")
-    ax[2].set_title("Reconstructed")
+    ax[1].set_title("Partial (IFFT of Sampled)")
+    ax[2].set_title("Final (IFFT of Reconstructed)")
     fig.suptitle("Random Sampling (Time Signals)")
     plt.tight_layout()
-    plt.show()
-
+    plt.savefig("outputs/q2b_random_sampling.png", dpi=300)
+    plt.clf()
+    print("[INFO] Random sampling saved at 'outputs/q2b_random_sampling.png'")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Compressed Sensing Reconstruction")
+    parser = argparse.ArgumentParser(
+        description="Compressed Sensing Reconstruction")
     parser.add_argument(
-        "--N", type=int, help="Length of the signal (default: 100)", default=100
+        "--N", type=int, help="Length of the signal (default: 100)",
+        default=100
     )
     parser.add_argument(
         "--samples",

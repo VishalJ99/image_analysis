@@ -2,7 +2,23 @@ import numpy as np
 from typing import Tuple
 
 
-def complex_soft_threshold(x, lam):
+def complex_soft_threshold(x: np.ndarray, lam: float) -> np.ndarray:
+    """
+    Apply complex soft thresholding to the input array.
+
+    Parameters:
+    -----------
+    x : np.ndarray
+        The input array.
+
+    lam : float
+        The threshold value.
+
+    Returns:
+    --------
+    np.ndarray
+        The soft thresholded array.
+    """
     res = abs(x) - lam
     return (res > 0.0) * res * x / abs(x)
 
