@@ -2,6 +2,7 @@ name: ia_vj279
 channels:
   - astra-toolbox
   - nvidia
+  - conda-forge
   - defaults
 dependencies:
   - python=3.11
@@ -9,10 +10,12 @@ dependencies:
   - matplotlib
   - scipy
   - scikit-learn
+  - astra-toolbox=2.1.2
   - pip
   - pip:
-    - torch
+    - https://github.com/odlgroup/odl/archive/master.zip
     - PyWavelets
     - scikit-image
     - opencv-python
+    - torch
 

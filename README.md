@@ -62,10 +62,10 @@ docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate 
 ```
 
 Q3b - Learned Gradient Descent Optimisation
-- Not runnable in the current environment, requires a GPU and Astra-Toolbox
-- Currently having issue installing Astra-Toolbox in the docker container.
-
-See script `src/coursework_LGD_filled_vj.ipynb` for a fully runnable notebook, simply upload to colab and run.
+```
+docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q3b.py 10"
+```
+Note, docker version can not use GPU, for GPU acceleration, run the notebook `src/coursework_LGD_filled_vj.ipynb` on colab.
 
 ## Contributing
 
