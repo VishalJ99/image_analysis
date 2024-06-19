@@ -2,23 +2,9 @@ import numpy as np
 from typing import Tuple
 
 
-def soft_threshold(x: np.ndarray, l: float) -> np.ndarray:
-    """
-    Applies the soft threshold operator to the input array.
-
-    Parameters:
-    ----------
-    x : numpy.ndarray
-        Input array to be thresholded.
-    l : float
-        Threshold value.
-
-    Returns:
-    -------
-    numpy.ndarray
-        Thresholded array.
-    """
-    return np.sign(x) * np.maximum(np.abs(x) - l, 0)
+def complex_soft_threshold(x, lam):
+    res = abs(x) - lam
+    return (res > 0.0) * res * x / abs(x)
 
 
 def fftc(x: np.ndarray) -> np.ndarray:
@@ -69,12 +55,12 @@ def ifftc(y: np.ndarray) -> np.ndarray:
 
 
 def POCS(
-    y_obs: np.ndarray, lam: float, nitr: int, ref: np.ndarray
+    y_obs: np.ndarray, lam: float, nitr: int, y_ref: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Perform the Projection Onto Convex Sets (POCS) algorithm for signal
     reconstruction. The POCS algorithm iteratively performs the following:
-    1. Transform the observed signal to the time (sparse) domain.
+    1. Transform the observed signal to the sparse (time) domain.
     2. Apply soft thresholding to the sparse signal.
     3. Transform the sparse signal back to the frequency domain.
     4. Enforce the observed values in the frequency domain.
@@ -110,11 +96,11 @@ def POCS(
 
         if i == 0:
             # Correct for the reduced energy in the time domain.
-            correction = len(y_obs) / sum(y_obs != 0)
+            correction = len(y_obs) / sum(np.abs(y_obs) > 0)
             s_i = correction * s_i
 
-        # Apply soft thresholding.
-        s_i = soft_threshold(s_i, lam)
+        # Apply complex soft thresholding.
+        s_i = complex_soft_threshold(s_i, lam)
 
         # Go back to freq domain.
         y_i = fftc(s_i)
@@ -123,7 +109,7 @@ def POCS(
         y_i = y_i * (y_obs == 0) + y_obs
 
         # Compute the error.
-        err[i] = np.linalg.norm(y_i - ref)
+        err[i] = np.linalg.norm(y_i - y_ref)
 
     # Return the sparse signal and the error.
     final_s = ifftc(y_i)

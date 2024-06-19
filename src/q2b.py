@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from q2_helper_funcs import fftc, ifftc, soft_threshold, POCS
+from q2_helper_funcs import fftc, ifftc, complex_soft_threshold, POCS
 import matplotlib.pyplot as plt
 
 
