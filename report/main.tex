@@ -546,7 +546,7 @@ This question focuses on the reconstruction of the image shown in Fig \ref{fig:r
 \end{figure}
 
 \subsubsection{Discrete Wavelet Transform of the Image}
-The image is first cropped to remove white space and then processed using the discrete wavelet transform (DWT) with Daubechies wavelets across three levels of frequency decomposition. The wavelet coefficients are then binary thresholded, retaining as `1` only those whose magnitude falls within the top 15\%, setting all others to `0`. These thresholded coefficients are displayed in Figure \ref{fig:wavelet_coefficients}, organised hierarchically: the upper-left quadrant contains the low-frequency components, while the other quadrants show higher frequency details in horizontal, vertical, and diagonal orientations. This display underscores the concentration of energy in the low-frequency components and the sparsity of activations in higher frequencies, illustrating the inherent sparsity of natural images in the wavelet domain.
+The image is first cropped to remove white space and then processed using the discrete wavelet transform (DWT) with Daubechies wavelets across three levels of frequency decomposition. The wavelet coefficients are then binary thresholded, retaining as `1` only those whose magnitude falls within the top 15\%, setting all others to `0`. These thresholded coefficients are displayed in Figure \ref{fig:wavelet_coefficients}, organised hierarchically: the upper-left quadrant contains the low-frequency components, while the other quadrants show higher frequency details in horizontal, vertical, and diagonal orientations. This display underscores the concentration of energy in the low-frequency components and the sparsity of activations in higher frequencies.
 
 
 \begin{figure}[H]
