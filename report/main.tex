@@ -534,13 +534,10 @@ Using iterative soft thresholding and enforcing consistency in the measurement d
     \caption{Comparison of the original and reconstructed signals under uniform and random sampling strategies in both the non-sparse and sparse domains.}
     \label{fig:full_comparison}
 \end{figure}
-
-According to compressed sensing theory, faithful signal reconstruction requires measurements on the order of \(O(K \log(N/K))\), which evaluates to 10 in this instance. Thus, 32 samples should suffice. However, uniform sampling with 32 measurements likely falls below the Nyquist rate, predicting its failure due to non-adherence to the Nyquist criterion and the incoherence condition. In contrast, random sampling likely meets the incoherence condition, enabling more accurate signal reconstruction.
-
-
+The superior performance of the random sampling strategy in reconstructing the original signal is supported by compressed sensing theory. Both random and uniform sampling strategies obtain 32 samples, which is inline with the measurement condition \(O(K \log(N/K))\)—calculated as 10 for this scenario. The uniform sampling's failure can instead be attributed primarily to two factors: its non-compliance with the incoherence condition, which is crucial for compressed sensing efficacy, and its likely violation of the Nyquist-Shannon sampling criterion.
 
 \subsection{Part C - Compressed Reconstruction and Multi-resolution Analysis}
-This question focuses on the reconstruction of the image shown in Fig \ref{fig:river_side}, using a varying subset of its wavelet coefficients. The motivation is to demonstrate how natural images can have sparse representations in the another domain.
+This question focuses on the reconstruction of the image shown in Fig \ref{fig:river_side}, using a subset of its wavelet coefficients. The motivation is to demonstrate how natural images can have sparse representations in another domain.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{../data/river_side.jpeg}
