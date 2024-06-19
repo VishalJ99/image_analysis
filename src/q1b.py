@@ -6,6 +6,8 @@ from sklearn.cluster import KMeans
 import cv2
 from skimage.measure import regionprops
 from scipy.ndimage import label
+# Fix random seed for reproducibility.
+np.random.seed(42)
 
 
 def create_rgb_mask(binary_mask):
