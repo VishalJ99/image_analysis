@@ -35,12 +35,12 @@
 \date{\today}
 \newpage
 \maketitle
+Word Count (Excluding this and the appendix): 2982
 \tableofcontents
 \newpage
 \section{Question 1 - Image Segmentation}
-
 \subsection{Part A: Lung CT Image Segmentation}
-For the segmentation of lung CT image, shown in Figure \ref{fig:lung_ct}, the primary objective is to accurately delineate lung tissues, including nodules, from surrounding anatomical structures. The inherent high contrast between the lung fields and adjacent tissues suggests the utility of a threshold-based segmentation method.
+For the segmentation of the lung CT image, shown in Figure \ref{fig:lung_ct}, the primary objective was to accurately delineate the lung tissue, including nodules, from surrounding anatomical structures. The inherent high contrast between the lung fields and adjacent tissues suggests the utility of a threshold-based segmentation method.
 
 \begin{figure}[H]
     \centering
@@ -429,7 +429,7 @@ The \( L_1 \) norm minimisation promotes sparsity in \( s \), aiding in accurate
 
 
 \subsubsection{Problem Setup}
-A practical demonstration involves a 1D sparse signal \( s \) with 100 components and 10 non-zero coefficients, transformed into the Fourier domain via the discrete fast Fourier transform (DFFT) to yield \( x \). Zero mean Gaussian noise (standard deviation 0.05) is added to simulate realistic conditions. The sparse signal and its Fourier transform are illustrated in Figure \ref{fig:compressed_sensing_signal}, where \( \Psi \) represents the DFFT matrix.
+A practical demonstration involves a generating a 1D sparse signal \( s \) with 100 components and 10 non-zero coefficients. Zero mean Gaussian noise (standard deviation 0.05) is added to simulate realistic conditions. $s$ is transformed into the Fourier domain via the discrete fast Fourier transform (DFFT) to yield \( X \).  The sparse signal and its Fourier transform are illustrated in Figure \ref{fig:compressed_sensing_signal}, where \( \Psi \) represents the DFFT matrix.
 \begin{figure} [H]
     \centering
     \begin{subfigure}{.45\textwidth}
@@ -445,11 +445,11 @@ A practical demonstration involves a 1D sparse signal \( s \) with 100 component
         \label{fig:sparse_signal}
     \end{subfigure}%
 
-    \caption{Generated signal expressed in sparse and non sparse domains: (a) Non sparse signal \( x\) in the fourier domain, (b) sparse signal \( s \) in the time domain.}
+    \caption{Generated signal expressed in sparse and non sparse domains: (a) Non sparse signal \( X\) in the fourier domain, (b) sparse signal \( s \) in the time domain.}
     \label{fig:compressed_sensing_signal}
 \end{figure}
 
-These signals can be seen in Figure \ref{fig:compressed_sensing_signal}. The signal in the non sparse measurement domain, \(x\), is then sub sampled under uniform and random strategies to obtain two sets of 32 measurements \( y \). These sub sampled signals are shown in Figure \ref{fig:compressed_sensing_sub_sampled_signals_combined} in both the time and frequency domains. Note that a correction factor is applied to the IDFFT of \(y\) to account for the sub sampling reducing the energy of the signal.
+These signals can be seen in Figure \ref{fig:compressed_sensing_signal}. The signal in the non sparse measurement domain, \(X\), is then sub sampled under uniform and random strategies to obtain two sets of 32 measurements \( y \). These sub sampled signals are shown in Figure \ref{fig:compressed_sensing_sub_sampled_signals_combined} in both the time and frequency domains. Note that a correction factor is applied to the IDFFT of \(y\) to account for the sub sampling reducing the energy of the signal.
 
 \begin{figure}[H]
     \centering
@@ -486,7 +486,7 @@ These signals can be seen in Figure \ref{fig:compressed_sensing_signal}. The sig
 \end{figure}
 
 \subsubsection{Results}
-Using iterative soft thresholding and enforcing consistency in the measurement domain, the original sparse signal \( s \) is reconstructed from the sub sampled measurements \( y \). The reconstructed signals under uniform and random sampling strategies are shown in Figure \ref{fig:full_comparison}. The reconstructed signals in the frequency domain are shown in Figure \ref{fig:full_comparison}.
+Using iterative soft thresholding in the sparse domain and enforcing consistency in the measurement domain, the signal is reconstructed. The reconstructed signals under uniform and random sampling strategies are shown in Figure \ref{fig:full_comparison}.
 
 \begin{figure}[H]
     \centering
@@ -683,7 +683,7 @@ Thus, the above inequality can be rearranged to give a bound on the number of it
 K \leq \frac{L \|\mathbf{x}_0 - \mathbf{x}^*\|_2^2}{2(f(\mathbf{x}_K) - f(\mathbf{x}^*))}
 \]
 
-Substituting the values of \( L = 2 \), \( \|\mathbf{x}_0 - \mathbf{x}^*\|^2_2 = 2 \) and \(f(\mathbf{x}_K) - f(\mathbf{x}^*) = 0.01 \) into the equation, the theoretical number of iterations required to achieve the specified accuracy is calculated as \( K \leq 200 \).
+Substituting the values of \( L = 2 \), \( \|\mathbf{x}_0 - \mathbf{x}^*\|^2_2 = 2 \) and \(f(\mathbf{x}_K) - f(\mathbf{x}^*) = 0.01 \) into the equation, the number of iterations required to achieve the specified accuracy is calculated as \( K \leq 200 \).
 
 \subsubsection{Practical Convergence Rate}
 To practically determine the number of iterations required to achieve the specified accuracy, the gradient descent algorithm is implemented in Python with a learning rate of \( \alpha = \frac{1}{L} = \frac{1}{2} \). The algorithm is run starting at 
@@ -694,12 +694,10 @@ The primary reason for the observed convergence rate being significantly lower t
 \[
 \nabla^2 f(\mathbf{x}) \succeq \mu \mathbf{I} \quad \forall \mathbf{x} \in \mathbb{R}^2,
 \]
-where \( \nabla^2 f(\mathbf{x}) \) is the Hessian matrix of \( f \) and \( \mathbf{I} \) is the identity matrix. The Hessian matrix of \( f \) is given by:
+where \( \nabla^2 f(\mathbf{x}) \) is the Hessian matrix of \( f \) and \( \mathbf{I} \) is the identity matrix. Which is equivalent to stating that \( H_f(\mathbf{x}) - \mu \mathbf{I} \) must be positive semi-definite for all \( \mathbf{x} \in \mathbb{R}^2 \). The Hessian matrix of \( f \) is given by:
 \[
 H_f(\mathbf{x}) = \begin{bmatrix} 1 & 0 \\ 0 & 2 \end{bmatrix}.
-\]
-
-Which is equivalent to stating that \( H_f(\mathbf{x}) - \mu \mathbf{I} \) must be positive semi-definite for all \( \mathbf{x} \in \mathbb{R}^2 \). The smallest value of \( \mu \) that satisfies this condition is 1.
+\] The smallest value of \( \mu \) that satisfies this condition is 1.
 
 Now that \( f \) is confirmed to be strongly convex with \( \mu = 1 \), the following bound for a strongly convex and L-smooth function can be used:
 % Derive the convergence rate if word count available.
@@ -737,7 +735,7 @@ Such a problem would typically be solved using proximal gradient descent however
 \end{algorithm}
 
 \subsubsection{Data-Driven Approach}
-The solution for \( \mathbf{x} \) obtained using the ADMM algorithm is compared to the solution obtained using the data-driven approach of learned gradient descent. The learned gradient descent approach involves replacing the proximal operator at each iteration with a neural network that takes as input the arguments of the proximal operator and returns the output. The algorithm can be summarised as follows:
+The solution for \( \mathbf{x} \) obtained using the ADMM algorithm is compared to the solution obtained using the data-driven approach of learned gradient descent. The learned gradient descent approach involves replacing the proximal operator at each iteration \(k\) with a neural network \(h_k\) that takes as input the arguments of the proximal operator and returns the output. The algorithm can be summarised as follows:
 
 
 \begin{algorithm}[H]
@@ -754,11 +752,10 @@ The solution for \( \mathbf{x} \) obtained using the ADMM algorithm is compared 
     \end{algorithmic}
     \end{algorithm}
 
-The initial estimate \( \mathbf{x}_0 \) is set to be the filtered back projection (FBP) reconstruction of the sinogram \( \mathbf{y} \). This provides a reasonable initial estimate for the image reconstruction problem.
+\( \mathbf{x}_0 \) is set to be the filtered back projection (FBP) reconstruction of the sinogram \( \mathbf{y} \). This provides a reasonable initial estimate for the image reconstruction problem.
 
 \subsubsection{Model Architecture}
-The architecture of the unrolling neural network \( h_* \) is a convolutional neural network that processes concatenated tensors of the current iterate $x$ and the gradient $u$. It comprises three convolutional layers, each with a kernel size of $3 \times 3$ and a stride of $1$. The first layer transforms 2 input channels to 32 output channels, followed by a Parametric Rectified Linear Unit (PReLU) activation. The second layer continues with 32 channels, also followed by PReLU. The final layer reduces the channel count from 32 to 1. The output of the network is delta $dx$, used to update the current estimate $x_i$ at each iteration of the learned gradient descent algorithm.
-
+The architecture of the unrolling neural network \( h_* \) is a convolutional neural network that processes concatenated tensors of the current iterate $x$ and the gradient $u$. It comprises three convolutional layers, each with a kernel size of $3 \times 3$ and a stride of $1$. The first layer transforms 2 input channels to 32 output channels, followed by a Parametric Rectified Linear Unit (PReLU) activation. The second layer continues with 32 channels, also followed by PReLU. The final layer reduces the channel count from 32 to 1. The output of the network delta $dx$ is multiplied with a learnable step size $\tau_k$ which is added as a corrective term to the current estimate $x_i$ at each iteration.
 \subsection{Training}
 The neural network is trained in a supervised manner using the Adam optimiser with a learning rate of $10^{-4}$, across 2000 epochs. The learned gradient descent algorithm is executed for 5 iterations, employing mean square error as the loss function, calculated between the final estimate $x_5$ and the true image $x^*$.
 
@@ -771,6 +768,9 @@ The results of the model-driven and data-driven approaches are compared in Figur
     \caption{Comparison of the FBP, model-driven, and data-driven reconstructions of the image.}
     \label{fig:reconstruction_comparison}
 \end{figure}
+\section{Appendix}
+\subsection{Co-pilot and ChatGPT Usage}
+GitHub CoPilot was used heavily to to generate the code in \texttt{src/figs.ipynb}. It was also used to create the docstrings for the functions and classes in this repository. CoPilot was also used to help define and format the figures and tables in this report. Any code from chat gpt is commented as such in the code.
 
 \bibliographystyle{plain}  % Choose the style that suits your needs
 \bibliography{references}  % The filename of the .bib file, without the extension
