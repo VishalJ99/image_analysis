@@ -29,41 +29,41 @@ All outputs are saved to the outputs directory.
 ### Running the scripts
 Q1a - Lung CT segmentation
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q1a.py data/CT.png"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q1a.py data/CT.png"
 ```
 Q1b - Noisy Flower segmentation
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q1b.py data/noisy_flower.jpg"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q1b.py data/noisy_flower.jpg"
 ```
 
 Q1c - Coin segmentation
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q1c.py data/coins.png"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q1c.py data/coins.png"
 ```
 
 Q2a - Line Fitting
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q2a.py"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q2a.py"
 ```
 
 Q2b - Compressed Sensing Reconstruction
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q2b.py"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q2b.py"
 ```
 
 Q2c - Sparse Wavelet Reconstruction
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q2c.py data/river.jpg"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q2c.py data/river.jpg"
 ```
 
 Q3a - Gradient Descent Convergence Rate
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q3a.py"    
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q3a.py"    
 ```
 
 Q3b - Learned Gradient Descent Optimisation
 ```
-docker run -it -v $(pwd):/image_analysis ia_vj279 /bin/bash -c "source activate ia_vj279 && python src/q3b.py 10"
+docker run -it -v $(pwd):/image_analysis vj279_image_analysis /bin/bash -c "source activate ia_vj279 && python src/q3b.py 10"
 ```
 Note, docker version can not use GPU, for GPU acceleration, run the notebook `src/coursework_LGD_filled_vj.ipynb` on colab.
 
