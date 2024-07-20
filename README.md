@@ -10,9 +10,9 @@ Script outputs will be saved the `./outputs` directory.
 ## Installation
 Set up
 ```
-git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/a8_img_assessment/vj279.git
+git clone git@github.com:VishalJ99/image_analysis.git
 
-cd vj279
+cd image_analysis
 
 conda env create -f environment.yml
 
